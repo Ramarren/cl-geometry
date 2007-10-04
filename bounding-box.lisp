@@ -30,3 +30,16 @@
        (>= (y point)(y-min box))
        (<= (x point)(x-max box))
        (<= (y point)(y-max box))))
+
+(defun intersect-boxes (box1 box2)
+  "Return bounding box common to both boxes."
+  (when (bounding-boxes-intersect-p box1 box2)
+    (make-instance 'bounding-box
+		   :x-min (max (x-min box1)
+			       (x-min box2))
+		   :x-max (min (x-max box1)
+			       (x-max box2))
+		   :y-min (max (y-min box1)
+			       (y-min box2))
+		   :y-max (min (y-max box1)
+			       (y-max box2)))))
