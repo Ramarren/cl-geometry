@@ -11,6 +11,11 @@
   (print-unreadable-object (object stream :type t)
     (format stream "~a,~a" (x object) (y object))))
 
+(defun point-equal-p (point1 point2)
+  "Checks if two points are geometrically equal."
+  (and (= (x point1)(x point2))
+       (= (y point1)(y point2))))
+
 (defclass line-segment ()
   ((start :accessor start :initarg :start :initform (make-instance 'point))
    (end :accessor end :initarg :end :initform (make-instance 'point)))
