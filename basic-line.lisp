@@ -77,7 +77,7 @@
 		     :y (- (/ (- (* (A line2)(C line1))(* (A line1)(C line2)))
 			      (- (* (A line2)(B line1))(* (A line1)(B line2))))))))
 
-(defun line-segments-intersection-point (line-segment1 line-segment2)
+(defun line-segments-intersection-point (line-segment1 line-segment2 &key (exclude-endpoints nil))
   "Find point of intersection of two segments. Returns nil if they do not intersect and point instance otherwise."
   (check-type line-segment1 'line-segment)
   (check-type line-segment2 'line-segment)
@@ -87,6 +87,9 @@
       (let ((line1 (line-from-segment line-segment1))
 	    (line2 (line-from-segment line-segment2)))
 	(let ((intersection-point (lines-intersection-point line1 line2)))
-	  (when (and (point-in-box intersection-point box1)
-		     (point-in-box intersection-point box2))
+	  (when (if exclude-endpoints
+		    (and (point-in-box-exclusive intersection-point box1)
+			 (point-in-box-exclusive intersection-point box2))
+		    (and (point-in-box-inclusive intersection-point box1)
+			 (point-in-box-inclusive intersection-point box2)))
 	    intersection-point))))))

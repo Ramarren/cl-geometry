@@ -17,9 +17,16 @@
 	   (< (y-max box1)(y-min box2))
 	   (< (y-max box2)(y-min box1)))))
 
-(defun point-in-box (point box)
+(defun point-in-box-exclusive (point box)
   "Check if point is contained inside a bounding box."
   (and (> (x point)(x-min box))
        (> (y point)(y-min box))
        (< (x point)(x-max box))
        (< (y point)(y-max box))))
+
+(defun point-in-box-inclusive (point box)
+  "Check if point is contained inside a bounding box."
+  (and (>= (x point)(x-min box))
+       (>= (y point)(y-min box))
+       (<= (x point)(x-max box))
+       (<= (y point)(y-max box))))
