@@ -166,3 +166,13 @@
 			     (point-in-box-inclusive intersection-point box2)))
 		intersection-point)
 	      nil))))))
+
+(defun point-line-position (point line)
+  "Returns >0 if point is to left/above the line, 0 if on the line and <0 if to the right/below the line."
+  (if (zerop (A line))
+      (let ((cy (/ (C line)(B line))));horizontal line case, assume up is left
+	(cond
+	  ((= (y point) cy) 0)
+	  ((> (y point) cy) 1)
+	  (t -1)))
+      (- (x point) (line-x-at-y line (y point)))))
