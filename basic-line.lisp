@@ -7,10 +7,22 @@
    (y :accessor y :initarg :y :initform 0))
   (:documentation "A point on a plane, with cartesian coordinates."))
 
+(defmethod print-object ((object point) stream)
+  (print-unreadable-object (object stream :type t)
+    (format stream "~a,~a" (x object) (y object))))
+
 (defclass line-segment ()
   ((start :accessor start :initarg :start :initform (make-instance 'point))
    (end :accessor end :initarg :end :initform (make-instance 'point)))
   (:documentation "A directed line segment defined by two points."))
+
+(defmethod print-object ((object line-segment) stream)
+  (print-unreadable-object (object stream :type t)
+    (format stream "(~a,~a)->(~a,~a)"
+	    (x (start object))
+	    (y (start object))
+	    (x (end object))
+	    (y (end object)))))
 
 (defclass line ()
   ((A :accessor A :initarg :A)
