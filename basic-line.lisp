@@ -30,6 +30,10 @@
    (C :accessor C :initarg :C :initform 0))
   (:documentation "A line with an equation Ax+By+C=0."))
 
+(defmethod print-object ((object line) stream)
+  (print-unreadable-object (object stream :type t)
+    (format stream "~ax+~ay+~a=0" (A object) (B object) (C object))))
+
 (defun line-y-at-x (line x)
   "Return y coordinate of a point with a given x coordinate on a line."
   (if (zerop (B line))
@@ -98,11 +102,13 @@
   ;;this is going to be problematic with inexact float arithmetic, but fix that later
   (when (lines-parralel-p line1 line2)
     (or (and (zerop (A line1))
-	     (= (/ (B line1)(C line1))
-		(/ (B line2)(C line2))))
+	     (or (= 0 (C line1) (C line2))
+		 (= (/ (B line1)(C line1))
+		    (/ (B line2)(C line2)))))
 	(and (zerop (B line1))
-	     (= (/ (A line1)(C line1))
-		(/ (A line2)(C line2))))
+	     (or (= 0 (C line1)(C line2))
+		 (= (/ (A line1)(C line1))
+		    (/ (A line2)(C line2)))))
 	(and (= (/ (A line1)(B line1))
 		(/ (A line2)(B line2)))
 	     (= (/ (C line1)(B line1))
@@ -135,14 +141,14 @@
 						    :y (y-min intersect-box))
 			      :end (make-instance 'point
 						  :x (x-min intersect-box)
-						  :y (y-max intersect-box)))
+						  :y (y-max intersect-box))))
 	       (t (make-instance 'line-segment
 				 :start (make-instance 'point
 						       :x (x-min intersect-box)
 						       :y (line-y-at-x line1 (x-min intersect-box)))
 				 :end (make-instance 'point
 						     :x (x-max intersect-box)
-						     :y (line-y-at-x line1 (x-min intersect-box)))))))))))))
+						     :y (line-y-at-x line1 (x-max intersect-box))))))))))))
 	  
 (defun line-segments-intersection-point (line-segment1 line-segment2 &key (exclude-endpoints nil))
   "Find point of intersection of two segments. Returns nil if they do not intersect and point instance otherwise."
