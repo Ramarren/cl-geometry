@@ -34,6 +34,12 @@
 									 (- y2 y1))))))))
 
 (defmethod construct-bounding-box ((object line-segment))
+  (with-accessors (start end) line-segment
+    (make-instance 'bounding-box
+		   :x-min (min (x start) (x end))
+		   :y-min (min (y start) (y end))
+		   :x-max (max (x start) (x end))
+		   :y-max (max (y start) (y end)))))
 
 (defun line-segment-length (line-segment)
   "Calculate length of a segment."
@@ -74,22 +80,16 @@
 		     :y (- (/ (- (* (A line2)(C line1))(* (A line1)(C line2)))
 			      (- (* (A line2)(B line1))(* (A line1)(B line2))))))))
 
-(defun line-segments-bounding-overlap (line-segment1 line-segment2)
-  "Check if bounding rectangles of two line segments overlap."
-  (with-accessors ((start start1)(end end1)) line-segment1
-    (with-accessors ((start start2)(end end2)) line-segment2
-      (let ((ax1 (x start1))
-	    (ay1 (y start1))
-	    (ax2 (x end1))
-	    (ay2 (y end1))
-	    (bx1 (x start2))
-	    (by1 (y start2))
-	    (bx2 (x end2))
-	    (by2 (y end2)))
-	
-
 (defun line-segments-intersection-point (line-segment1 line-segment2)
   "Find point of intersection of two segments. Returns nil if they do not intersect and point instance otherwise."
   (check-type line-segment1 'line-segment)
   (check-type line-segment2 'line-segment)
-  
+  (let ((box1 (construct-bounding-box line-segment1))
+	(box2 (construct-bounding-box line-segment2)))
+    (when (bounding-boxes-intersect-p box1 box2)
+      (let ((line1 (line-from-segment line-segment1))
+	    (line2 (line-from-segment line-segment2)))
+	(let ((intersection-point (lines-intersection-point line1 line2)))
+	  (when (and (point-in-box intersection-point box1)
+		     (point-in-box intersection-point box2))
+	    intersection-point))))))
