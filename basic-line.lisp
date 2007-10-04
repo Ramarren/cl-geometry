@@ -127,13 +127,22 @@
 	    (line2 (line-from-segment line-segment2)))
 	(when (lines-equal-p line1 line2)
 	  (let ((intersect-box (intersect-boxes box1 box2)))
-	    (make-instance 'line-segment
-			   :start (make-instance 'point
-						 :x (x-min intersect-box)
-						 :y (line-y-at-x (x-min intersect-box)))
-			   :end (make-instance 'point
-					       :x (x-max intersect-box)
-					       :y (line-y-at-x (x-min intersect-box))))))))))
+	    (cond
+	      ((= (x-min intersect-box)(x-max intersect-box))
+	       (make-instance 'line-segment
+			      :start (make-instance 'point
+						    :x (x-min intersect-box)
+						    :y (y-min intersect-box))
+			      :end (make-instance 'point
+						  :x (x-min intersect-box)
+						  :y (y-max intersect-box)))
+	       (t (make-instance 'line-segment
+				 :start (make-instance 'point
+						       :x (x-min intersect-box)
+						       :y (line-y-at-x line1 (x-min intersect-box)))
+				 :end (make-instance 'point
+						     :x (x-max intersect-box)
+						     :y (line-y-at-x line1 (x-min intersect-box)))))))))))))
 	  
 (defun line-segments-intersection-point (line-segment1 line-segment2 &key (exclude-endpoints nil))
   "Find point of intersection of two segments. Returns nil if they do not intersect and point instance otherwise."
