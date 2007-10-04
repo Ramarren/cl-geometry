@@ -61,8 +61,8 @@
 	((and (= x1 x2)(= y1 y2)) (error "Degenerate line segment."))
 	((= x1 x2) (make-instance 'line :B 0 :A 1 :C (- x1)));vertical
 	((= y1 y2) (make-instance 'line :A 0 :B 1 :C (- y1)))
-	(t (make-instance 'line :A 1 :B (- (/ (- x2 x1)(- y2 y1))) :C (/ (- (* x1 y2) (* y1 x2))
-									 (- y2 y1))))))))
+	(t (make-instance 'line :A 1 :B (- (/ (- x2 x1)(- y2 y1))) :C (- (/ (- (* x1 y2) (* y1 x2))
+									    (- y2 y1)))))))))
 
 (defmethod construct-bounding-box ((object line-segment))
   (with-accessors ((start start) (end end)) object
