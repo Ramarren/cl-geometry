@@ -30,6 +30,22 @@
    (C :accessor C :initarg :C :initform 0))
   (:documentation "A line with an equation Ax+By+C=0."))
 
+(defun line-y-at-x (line x)
+  "Return y coordinate of a point with a given x coordinate on a line."
+  (if (zerop (B line))
+      (if (= x (- (/ (C line) (A line))))
+	  0
+	  nil)
+      (- (/ (+ (* (A line) x) (C line)) (B line)))))
+
+(defun line-x-at-y (line y)
+  "Return x coordinate of a point with a given y coordinate on a line."
+  (if (zerop (A line))
+      (if (= y (- (/ (C line) (B line))))
+	  0
+	  nil)
+      (- (/ (+ (* (B line) y) (C line)) (A line)))))
+
 (defun line-from-segment (line-segment)
   "Calculate line from line segment."
   (with-accessors ((start start) (end end)) line-segment
@@ -54,7 +70,6 @@
 
 (defun line-segment-length (line-segment)
   "Calculate length of a segment."
-  (check-type line-segment 'line-segment)
   (with-accessors ((start start) (end end)) line-segment
     (distance (x start)(y start)(x end)(y end))))
 
@@ -77,10 +92,24 @@
 	     (tan-2 (- (/ (A line2)(B line2)))))
 	 (= tan-1 tan-2)))))
 
+(defun lines-equal-p (line1 line2)
+  "Check if two lines are equal."
+  ;;can't just compare A,B,C as they have one irrelevant degree of freedom
+  ;;this is going to be problematic with inexact float arithmetic, but fix that later
+  (when (lines-parralel-p line1 line2)
+    (or (and (zerop (A line1))
+	     (= (/ (B line1)(C line1))
+		(/ (B line2)(C line2))))
+	(and (zerop (B line1))
+	     (= (/ (A line1)(C line1))
+		(/ (A line2)(C line2))))
+	(and (= (/ (A line1)(B line1))
+		(/ (A line2)(B line2)))
+	     (= (/ (C line1)(B line1))
+		(/ (C line2)(B line2)))))))
+
 (defun lines-intersection-point (line1 line2)
   "Find point of intersection of two lines. Returns nil if lines are parallel and point instance otherwise."
-  (check-type line1 'line)
-  (check-type line2 'line)
   (if (lines-parralel-p line1 line2)
       nil;parallel lines have no intersection point, this is a purely euclidan geometry library
       (make-instance 'point
@@ -89,19 +118,36 @@
 		     :y (- (/ (- (* (A line2)(C line1))(* (A line1)(C line2)))
 			      (- (* (A line2)(B line1))(* (A line1)(B line2))))))))
 
+(defun line-segments-intersection-segment (line-segment1 line-segment2)
+  "Find an intersection of two colinear line segments."
+  (let ((box1 (construct-bounding-box line-segment1))
+	(box2 (construct-bounding-box line-segment2)))
+    (when (bounding-boxes-intersect-p box1 box2)
+      (let ((line1 (line-from-segment line-segment1))
+	    (line2 (line-from-segment line-segment2)))
+	(when (lines-equal-p line1 line2)
+	  (let ((intersect-box (intersect-boxes box1 box2)))
+	    (make-instance 'line-segment
+			   :start (make-instance 'point
+						 :x (x-min intersect-box)
+						 :y (line-y-at-x (x-min intersect-box)))
+			   :end (make-instance 'point
+					       :x (x-max intersect-box)
+					       :y (line-y-at-x (x-min intersect-box))))))))))
+	  
 (defun line-segments-intersection-point (line-segment1 line-segment2 &key (exclude-endpoints nil))
   "Find point of intersection of two segments. Returns nil if they do not intersect and point instance otherwise."
-  (check-type line-segment1 'line-segment)
-  (check-type line-segment2 'line-segment)
   (let ((box1 (construct-bounding-box line-segment1))
 	(box2 (construct-bounding-box line-segment2)))
     (when (bounding-boxes-intersect-p box1 box2)
       (let ((line1 (line-from-segment line-segment1))
 	    (line2 (line-from-segment line-segment2)))
 	(let ((intersection-point (lines-intersection-point line1 line2)))
-	  (when (if exclude-endpoints
-		    (and (point-in-box-exclusive intersection-point box1)
-			 (point-in-box-exclusive intersection-point box2))
-		    (and (point-in-box-inclusive intersection-point box1)
-			 (point-in-box-inclusive intersection-point box2)))
-	    intersection-point))))))
+	  (if intersection-point
+	      (when (if exclude-endpoints
+			(and (point-in-box-exclusive intersection-point box1)
+			     (point-in-box-exclusive intersection-point box2))
+			(and (point-in-box-inclusive intersection-point box1)
+			     (point-in-box-inclusive intersection-point box2)))
+		intersection-point)
+	      nil))))))
