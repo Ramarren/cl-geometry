@@ -107,3 +107,45 @@
 			  polygon))))
 
 (defun point-in-polygon-crossing (point polygon)
+  "Determine if a point belongs to a polygon using crossing (oddeven) rule."
+  (let ((box (construct-bounding-box polygon))
+	(edges (edge-list-from-point-list polygon)))
+    (when (point-in-box-exclusive point box)
+      (let ((ray (make-instance 'line-segment
+				:start point
+				:end (make-instance 'point
+						    :x (x-max box)
+						    :y (y point)))))
+	(let ((intersections (mapcar #'(lambda (edge)
+					 (line-segments-intersection-point ray edge))
+				     edges)))
+	  ;eliminate intersections according to crossing rules
+	  ;line-segments-intersection-point doesn't see colinear edges, so that's done
+	  ;strictly to the right of point:
+	  (let ((strict-intersections (remove-if-not #'(lambda (inters)
+							 (> (x inters) (x point)))
+						     intersections)))
+	    ;if an intersection happens at the vertex, it should be counted once only if
+	    ;edges don't 'bounce' at this vertex
+	    (let ((vertex-intersections (intersection polygon strict-intersections));will contain each such point only once
+		  (bounced nil))
+	      (dolist (tk vertex-intersections)
+		(print tk)
+		(let ((two-edges (remove-if-not #'(lambda (edge)
+						    (or (eql (start edge) tk)
+							(eql (end edge) tk)))
+						edges)))
+		  (print two-edges)
+		  (destructuring-bind (edge1 edge2) two-edges
+		    (if (or (and (> (y (start edge1))
+				    (y (end edge1)))
+				 (< (y (start edge2))
+				    (y (end edge2))))
+			    (and (< (y (start edge1))
+				    (y (end edge1)))
+				 (> (y (start edge2))
+				    (y (end edge2)))))
+			(push tk bounced)))))
+	      (let ((clean-intersections (set-difference (remove-duplicates strict-intersections)
+							 bounced)))
+		(oddp (length clean-intersections))))))))))
