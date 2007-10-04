@@ -17,15 +17,22 @@
 	   (< (y-max box1)(y-min box2))
 	   (< (y-max box2)(y-min box1)))))
 
-(defun point-in-box-exclusive (point box)
+(defun point-in-box-exclusive (point box &key (include-in-degenerate-dimension nil))
   "Check if point is contained inside a bounding box."
-  (and (> (x point)(x-min box))
-       (> (y point)(y-min box))
-       (< (x point)(x-max box))
-       (< (y point)(y-max box))))
+  (or (and (> (x point)(x-min box))
+	   (> (y point)(y-min box))
+	   (< (x point)(x-max box))
+	   (< (y point)(y-max box)))
+      (when include-in-degenerate-dimension
+	(or (and (= (x-min box)(x-max box)(x point))
+		 (> (y point)(y-min box))
+		 (< (y point)(y-max box)))
+	    (and (= (y-min box)(y-max box)(y point))
+		 (> (x point)(x-min box))
+		 (< (x point)(x-max box)))))))
 
 (defun point-in-box-inclusive (point box)
-  "Check if point is contained inside a bounding box."
+  "Check if point is contained inside or directly on a bounding box."
   (and (>= (x point)(x-min box))
        (>= (y point)(y-min box))
        (<= (x point)(x-max box))

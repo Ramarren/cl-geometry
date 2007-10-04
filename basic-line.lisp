@@ -160,8 +160,8 @@
 	(let ((intersection-point (lines-intersection-point line1 line2)))
 	  (if intersection-point
 	      (when (if exclude-endpoints
-			(and (point-in-box-exclusive intersection-point box1)
-			     (point-in-box-exclusive intersection-point box2))
+			(and (point-in-box-exclusive intersection-point box1 :include-in-degenerate-dimension t)
+			     (point-in-box-exclusive intersection-point box2 :include-in-degenerate-dimension t))
 			(and (point-in-box-inclusive intersection-point box1)
 			     (point-in-box-inclusive intersection-point box2)))
 		intersection-point)
