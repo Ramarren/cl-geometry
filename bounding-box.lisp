@@ -12,10 +12,10 @@
 
 (defun bounding-boxes-intersect-p (box1 box2)
   "Check if two bounding boxes intersect."
-  (not (or (<= (x-max box1)(x-min box2))
-	   (<= (x-max box2)(x-min box1))
-	   (<= (y-max box1)(y-min box2))
-	   (<= (y-max box2)(y-min box1)))))
+  (not (or (< (x-max box1)(x-min box2))
+	   (< (x-max box2)(x-min box1))
+	   (< (y-max box1)(y-min box2))
+	   (< (y-max box2)(y-min box1)))))
 
 (defun point-in-box-exclusive (point box)
   "Check if point is contained inside a bounding box."
