@@ -46,8 +46,8 @@
 (defun area-triangle-edges-small-angles (a b c)
   "Area of a triangle given length of edges using numerically stabilized Heron's formula."
   (let ((edge-list (list a b c)))
-    (destructuring-bind (sa sb sb) (sort edge-list #'>)
-      (/ (sqrt (+ a (+ b c)) (- c (- a b))(+ c (- a b))(+ a (- b c))) 4))))
+    (destructuring-bind (sa sb sc) (sort edge-list #'>)
+      (/ (sqrt (+ sa (+ sb sc)) (- sc (- sa sb))(+ sc (- sa sb))(+ sa (- sb sc))) 4))))
 
 (defun area-triangle-vertices (xa ya xb yb xc yc)
   "Area of a triangle given positions of vertices."
