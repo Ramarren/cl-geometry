@@ -9,5 +9,5 @@
 	       (:file "trivial-geometry" :depends-on ("package"))
 	       (:file "bounding-box" :depends-on ("package"))
 	       (:file "basic-line" :depends-on ("bounding-box" "package")))
-  :depends-op (:iterate))
+  :depends-on (:iterate))
   
