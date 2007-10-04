@@ -116,9 +116,9 @@
 				:end (make-instance 'point
 						    :x (x-max box)
 						    :y (y point)))))
-	(let ((intersections (mapcar #'(lambda (edge)
-					 (line-segments-intersection-point ray edge))
-				     edges)))
+	(let ((intersections (remove nil (mapcar #'(lambda (edge)
+						     (line-segments-intersection-point ray edge))
+						 edges))))
 	  ;eliminate intersections according to crossing rules
 	  ;line-segments-intersection-point doesn't see colinear edges, so that's done
 	  ;strictly to the right of point:
@@ -127,15 +127,13 @@
 						     intersections)))
 	    ;if an intersection happens at the vertex, it should be counted once only if
 	    ;edges don't 'bounce' at this vertex
-	    (let ((vertex-intersections (intersection polygon strict-intersections));will contain each such point only once
+	    (let ((vertex-intersections (intersection polygon strict-intersections :test #'point-equal-p));will contain each such point only once
 		  (bounced nil))
 	      (dolist (tk vertex-intersections)
-		(print tk)
 		(let ((two-edges (remove-if-not #'(lambda (edge)
-						    (or (eql (start edge) tk)
-							(eql (end edge) tk)))
+						    (or (point-equal-p (start edge) tk)
+							(point-equal-p (end edge) tk)))
 						edges)))
-		  (print two-edges)
 		  (destructuring-bind (edge1 edge2) two-edges
 		    (if (or (and (> (y (start edge1))
 				    (y (end edge1)))
@@ -146,6 +144,6 @@
 				 (> (y (start edge2))
 				    (y (end edge2)))))
 			(push tk bounced)))))
-	      (let ((clean-intersections (set-difference (remove-duplicates strict-intersections)
-							 bounced)))
+	      (let ((clean-intersections (set-difference (remove-duplicates strict-intersections :test #'point-equal-p)
+							 bounced :test #'point-equal-p)))
 		(oddp (length clean-intersections))))))))))
