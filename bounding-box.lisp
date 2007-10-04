@@ -7,6 +7,10 @@
    (y-max :accessor y-max :initarg :y-max))
   (:documentation "A bounding box."))
 
+(defmethod print-object ((object bounding-box) stream)
+  (print-unreadable-object (object stream :type t)
+    (format stream "~a-~a:~a-~a" (x-min object)(x-max object)(y-min object)(y-max object))))
+
 (defgeneric construct-bounding-box (object)
   (:documentation "Construct a bounding box of a given object."))
 
