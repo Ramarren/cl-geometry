@@ -20,8 +20,7 @@
 
 (defun line-from-segment (line-segment)
   "Calculate line from line segment."
-  (check-type line-segment 'line-segment)
-  (with-accessors (start end) line-segment
+  (with-accessors ((start start) (end end)) line-segment
     (let ((x1 (x start))
 	  (y1 (y start))
 	  (x2 (x end))
@@ -34,7 +33,7 @@
 									 (- y2 y1))))))))
 
 (defmethod construct-bounding-box ((object line-segment))
-  (with-accessors (start end) line-segment
+  (with-accessors ((start start) (end end)) object
     (make-instance 'bounding-box
 		   :x-min (min (x start) (x end))
 		   :y-min (min (y start) (y end))
@@ -44,13 +43,11 @@
 (defun line-segment-length (line-segment)
   "Calculate length of a segment."
   (check-type line-segment 'line-segment)
-  (with-accessors (start end) line-segment
+  (with-accessors ((start start) (end end)) line-segment
     (distance (x start)(y start)(x end)(y end))))
 
 (defun lines-parralel-p (line1 line2)
   "Check if two lines are parrallel."
-  (check-type line1 'line)
-  (check-type line2 'line)
   (cond
     ((and (zerop (A line1))
 	  (zerop (A line2)));both horizontal
