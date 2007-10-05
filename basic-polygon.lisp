@@ -115,22 +115,26 @@
 	      (> min-y (y point))));line is above the ray
 	(>= (point-line-position point line) 0))));edge is to the left of the point
 
-(defun point-in-polygon-crossing (point polygon)
+(defun point-in-polygon-crossing-p (point polygon)
   "Determine if a point belongs to a polygon using crossing (oddeven) rule."
   (let ((edge-list (edge-list-from-point-list polygon)))
     (oddp (count-if-not #'(lambda (edge)
 			    (filter-ray-intersection point edge))
 			edge-list))))
-    
-(defun point-in-polygon-winding (point polygon)
+
+(defun point-in-polygon-winding-number (point polygon)
   "Determine if point is inside polygon using winding rule."
   (let ((edge-list (edge-list-from-point-list polygon)))
     (let ((intersecting-edges (remove-if #'(lambda (edge)
 					     (filter-ray-intersection point edge))
 					 edge-list)))
-      (not (zerop (reduce #'+ (mapcar #'(lambda (edge)
-					  (if (> (y (start edge))
-						 (y (end edge)))
-					      1
-					      -1))
-				      intersecting-edges)))))))
+      (reduce #'+ (mapcar #'(lambda (edge)
+			      (if (> (y (start edge))
+				     (y (end edge)))
+				  1
+				  -1))
+			  intersecting-edges)))))
+
+(defun point-in-polygon-winding-p (point polygon)
+  (not (zerop (point-in-polygon-winding-number point polygon))))
+
