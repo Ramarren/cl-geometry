@@ -58,11 +58,11 @@
 (defun possible-diagonal-p (diag edge-list)
   "Checks if diag does not intersect any edge in edge list."
   (notany #'(lambda (e)
-	      (or (point-equal-p (start diag) (start e))
-		  (point-equal-p (start diag) (end e))
-		  (point-equal-p (end diag) (start e))
-		  (point-equal-p (end diag) (end e))
-		  (intersect-p (start diag)(end diag)(start e)(end e))))
+	      (and (not (point-equal-p (start diag) (start e)))
+		   (not (point-equal-p (start diag) (end e)))
+		   (not (point-equal-p (end diag) (start e)))
+		   (not (point-equal-p (end diag) (end e)))
+		   (intersect-p (start diag)(end diag)(start e)(end e))))
 	  edge-list))
 
 (defun in-cone-p (ring-node b)
@@ -92,3 +92,12 @@
 
 (defun ear-init (polygon)
   "Takes a list of points and creates a ring initialized with ear data."
+  (let ((edge-list (edge-list-from-point-list polygon))
+	(ring-head (double-linked-ring-from-point-list polygon 'ear-ring-node)))
+    (iterate (for node initially ring-head then (next-node node))
+	     (until (and (eq node ring-head)
+			 (not (first-iteration-p))))
+	     (setf (ear node) (diagonal-p (prev-node node)
+					  (next-node node)
+					  edge-list)))
+    (values ring-head edge-list)))
