@@ -4,6 +4,7 @@
 
 ;;;; Express polygon a simple list of points.
 
+;;;or a list od edges
 (defun edge-list-from-point-list (polygon)
   "Change polygon represented as a list of points into a list of edges (line segments)."
   (let ((vertex-zero (car polygon)))
@@ -13,21 +14,28 @@
 		     (make-instance 'line-segment :start (car lst) :end (cadr lst))))
 	     polygon)))
 
-(defmethod print-object ((object dlist) stream)
+;;; or double-linked ring
+(defclass poly-ring-node ()
+  ((val :accessor val :initarg :val)
+   (next :accessor next-node :initarg :next)
+   (prev :accessor prev-node :initarg :prev))
+  (:documentation "Double linked ring node."))
+
+(defmethod print-object ((object poly-ring-node) stream)
   (print-unreadable-object (object stream :type t)
-    (format stream "NODE: ~a" (dlist-val object))))
+    (format stream "NODE: ~a" (val object))))
 
 (defun double-linked-ring-from-point-list (polygon)
   "Change polygon representation from list of points to double linked ring of points."
-  (let ((head (make-dlist)))
+  (let ((head (make-instance 'poly-ring-node)))
     (let ((tail head))
       (dolist (tk polygon)
-	(setf (dlist-val tail) tk
-	      (dlist-next tail) (make-dlist)
-	      (dlist-prev (dlist-next tail)) tail
-	      tail (dlist-next tail)))
-      (setf (dlist-prev head) (dlist-prev tail)
-	    (dlist-next (dlist-prev tail)) head))
+	(setf (val tail) tk
+	      (next-node tail) (make-instance 'poly-ring-node)
+	      (prev-node (next-node tail)) tail
+	      tail (next-node tail)))
+      (setf (prev-node head) (prev-node tail)
+	    (next-node (prev-node tail)) head))
     head))
 
 (defmethod construct-bounding-box ((object list));assumes all list are polygons...
@@ -71,20 +79,20 @@
   "Return 1 if polygon is counterclockwise and -1 if it is oriented clockwise. Assumes simple polygon."
   (let ((poly-ring (double-linked-ring-from-point-list polygon)))
     ;find rightmost lowest vertex
-    (let ((lowest-rightmost-node (do ((node poly-ring (dlist-next node))
+    (let ((lowest-rightmost-node (do ((node poly-ring (next-node node))
 				      (min-node nil)
 				      (min-val nil))
 				     ((and (eq poly-ring node) min-val) min-node)
 				   (when (or (null min-val)
-					     (and (<= (y (dlist-val node)) (y min-val))
-						  (> (x (dlist-val node)) (x min-val))))
+					     (and (<= (y (val node)) (y min-val))
+						  (> (x (val node)) (x min-val))))
 				     (setf min-node node
-					   min-val (dlist-val node))))))
-      (let ((end-of-leaving-edge (dlist-val (dlist-next lowest-rightmost-node)))
-	    (start-of-entering-edge (dlist-val (dlist-prev lowest-rightmost-node))))
+					   min-val (val node))))))
+      (let ((end-of-leaving-edge (val (next-node lowest-rightmost-node)))
+	    (start-of-entering-edge (val (prev-node lowest-rightmost-node))))
 	(let ((line-entering (line-from-segment (make-instance 'line-segment
 							       :start start-of-entering-edge
-							       :end (dlist-val lowest-rightmost-node)))))
+							       :end (val lowest-rightmost-node)))))
 	  (let ((is-end-left (point-line-position end-of-leaving-edge line-entering)))
 	    (cond
 	      ((> is-end-left 0) 1)
