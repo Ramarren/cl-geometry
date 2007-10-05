@@ -25,13 +25,13 @@
   (print-unreadable-object (object stream :type t)
     (format stream "NODE: ~a" (val object))))
 
-(defun double-linked-ring-from-point-list (polygon)
+(defun double-linked-ring-from-point-list (polygon &optional (ring-type 'poly-ring-node))
   "Change polygon representation from list of points to double linked ring of points."
-  (let ((head (make-instance 'poly-ring-node)))
+  (let ((head (make-instance ring-type)))
     (let ((tail head))
       (dolist (tk polygon)
 	(setf (val tail) tk
-	      (next-node tail) (make-instance 'poly-ring-node)
+	      (next-node tail) (make-instance ring-type)
 	      (prev-node (next-node tail)) tail
 	      tail (next-node tail)))
       (setf (prev-node head) (prev-node tail)
