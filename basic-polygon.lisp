@@ -116,7 +116,7 @@
 			  (y (end edge)))))
 	  (or (<= max-y (y point));line if below or at the ray
 	      (> min-y (y point))));line is above the ray
-	(<= (point-line-position point line)))));edge is to the left of the point
+	(>= (point-line-position point line) 0))));edge is to the left of the point
 
 (defun point-in-polygon-crossing (point polygon)
   "Determine if a point belongs to a polygon using crossing (oddeven) rule."
@@ -131,9 +131,9 @@
     (let ((intersecting-edges (remove-if #'(lambda (edge)
 					     (filter-ray-intersection point edge))
 					 edge-list)))
-      (zerop (reduce #'+ (mapcar #'(lambda (edge)
-				     (if (> (y (start edge))
-					    (y (end edge)))
-					 1
-					 -1))
-				 intersecting-edges))))))
+      (not (zerop (reduce #'+ (mapcar #'(lambda (edge)
+					  (if (> (y (start edge))
+						 (y (end edge)))
+					      1
+					      -1))
+				      intersecting-edges)))))))
