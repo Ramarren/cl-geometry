@@ -108,6 +108,7 @@
 
 (defun point-in-polygon-crossing (point polygon)
   "Determine if a point belongs to a polygon using crossing (oddeven) rule."
+  ;can be simplified, mayby significantly, by using horizonalnes of ray more
   (let ((box (construct-bounding-box polygon))
 	(edges (edge-list-from-point-list polygon)))
     (when (point-in-box-exclusive point box)
@@ -147,3 +148,8 @@
 	      (let ((clean-intersections (set-difference (remove-duplicates strict-intersections :test #'point-equal-p)
 							 bounced :test #'point-equal-p)))
 		(oddp (length clean-intersections))))))))))
+
+(defun point-in-polygon-winding (point polygon)
+  "Determine if point is inside polygon using winding rule."
+  ;for every edge point is to the left of, check if it passes the horizontal ray, and in what direction
+  )
