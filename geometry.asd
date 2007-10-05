@@ -9,6 +9,7 @@
 	       (:file "trivial-geometry" :depends-on ("package"))
 	       (:file "bounding-box" :depends-on ("package"))
 	       (:file "basic-line" :depends-on ("bounding-box" "package"))
-	       (:file "basic-polygon" :depends-on ("basic-line")))
+	       (:file "basic-polygon" :depends-on ("basic-line"))
+	       (:file "triangulation" :depends-on ("basic-line" "trivial-geometry" "basic-polygon")))
   :depends-on (:iterate))
 

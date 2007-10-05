@@ -50,8 +50,8 @@
       (/ (sqrt (* (+ sa (+ sb sc)) (- sc (- sa sb))(+ sc (- sa sb))(+ sa (- sb sc)))) 4))))
 
 (defun area-triangle-vertices (xa ya xb yb xc yc)
-  "Area of a triangle given positions of vertices."
-  (/ (- (* (- xb xa) (- yc ya))(* (- yb ya) (- xc xa)))) 2)
+  "Area of a triangle given positions of vertices. Will return negative for clockwise oriented triangle."
+  (/ (- (* (- xb xa) (- yc ya))(* (- yb ya) (- xc xa))) 2))
 
 ;;rectangle
 (defun area-rectangle (a b)
