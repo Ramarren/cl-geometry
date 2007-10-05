@@ -36,5 +36,7 @@
 	   #:area-simple-polygon
 	   #:point-in-polygon-crossing-p
 	   #:point-in-polygon-winding-number
-	   #:point-in-polygon-winding-p))
+	   #:point-in-polygon-winding-p
+	   #:triangulate
+	   #:colinear-p))
 
