@@ -127,5 +127,13 @@
     
 (defun point-in-polygon-winding (point polygon)
   "Determine if point is inside polygon using winding rule."
-  ;for every edge point is to the left of, check if it passes the horizontal ray, and in what direction
-  )
+  (let ((edge-list (edge-list-from-point-list polygon)))
+    (let ((intersecting-edges (remove-if #'(lambda (edge)
+					     (filter-ray-intersection point edge))
+					 edge-list)))
+      (zerop (reduce #'+ (mapcar #'(lambda (edge)
+				     (if (> (y (start edge))
+					    (y (end edge)))
+					 1
+					 -1))
+				 intersecting-edges))))))
