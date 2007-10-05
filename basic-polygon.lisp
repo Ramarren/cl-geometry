@@ -106,48 +106,23 @@
 				(- (* (x v1)(y v2))(* (x v2)(y v1)))))
 			  polygon))))
 
+(defun filter-ray-intersections (point edge)
+  "Return t if edge does not intersect ray from point properly."
+  (let ((line (line-from-segment edge)))
+    (or (zerop (A line));line is horizontal
+	(let ((max-y (max (y (start edge))
+			  (y (end edge))))
+	      (min-y (min (y (start edge))
+			  (y (end edge)))))
+	  (or (<= max-y (y point));line if below or at the ray
+	      (> min-y (y point))));line is above the ray
+	(<= (point-line-position point line)))));edge is to the left of the point
+
 (defun point-in-polygon-crossing (point polygon)
   "Determine if a point belongs to a polygon using crossing (oddeven) rule."
-  ;can be simplified, mayby significantly, by using horizonalnes of ray more
-  (let ((box (construct-bounding-box polygon))
-	(edges (edge-list-from-point-list polygon)))
-    (when (point-in-box-exclusive point box)
-      (let ((ray (make-instance 'line-segment
-				:start point
-				:end (make-instance 'point
-						    :x (x-max box)
-						    :y (y point)))))
-	(let ((intersections (remove nil (mapcar #'(lambda (edge)
-						     (line-segments-intersection-point ray edge))
-						 edges))))
-	  ;eliminate intersections according to crossing rules
-	  ;line-segments-intersection-point doesn't see colinear edges, so that's done
-	  ;strictly to the right of point:
-	  (let ((strict-intersections (remove-if-not #'(lambda (inters)
-							 (> (x inters) (x point)))
-						     intersections)))
-	    ;if an intersection happens at the vertex, it should be counted once only if
-	    ;edges don't 'bounce' at this vertex
-	    (let ((vertex-intersections (intersection polygon strict-intersections :test #'point-equal-p));will contain each such point only once
-		  (bounced nil))
-	      (dolist (tk vertex-intersections)
-		(let ((two-edges (remove-if-not #'(lambda (edge)
-						    (or (point-equal-p (start edge) tk)
-							(point-equal-p (end edge) tk)))
-						edges)))
-		  (destructuring-bind (edge1 edge2) two-edges
-		    (if (or (and (> (y (start edge1))
-				    (y (end edge1)))
-				 (< (y (start edge2))
-				    (y (end edge2))))
-			    (and (< (y (start edge1))
-				    (y (end edge1)))
-				 (> (y (start edge2))
-				    (y (end edge2)))))
-			(push tk bounced)))))
-	      (let ((clean-intersections (set-difference (remove-duplicates strict-intersections :test #'point-equal-p)
-							 bounced :test #'point-equal-p)))
-		(oddp (length clean-intersections))))))))))
+  (let ((edge-list (edge-list-from-point-list polygon)))
+    (oddp (count-if-not #'filter-ray-intersection edge-list))))
+    
 
 (defun point-in-polygon-winding (point polygon)
   "Determine if point is inside polygon using winding rule."
