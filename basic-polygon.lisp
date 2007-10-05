@@ -13,9 +13,6 @@
 		     (make-instance 'line-segment :start (car lst) :end (cadr lst))))
 	     polygon)))
 
-(defstruct dlist
-  val next prev)
-
 (defmethod print-object ((object dlist) stream)
   (print-unreadable-object (object stream :type t)
     (format stream "NODE: ~a" (dlist-val object))))
@@ -58,12 +55,12 @@
     (recurse-list lst (cdr lst))))
 
 (defun frustrated-polygon-p (polygon)
-  "Check if any two edges intersect linearly."
+  "Check if any two colinear edges intersect."
   (let ((edge-list (edge-list-from-point-list polygon)))
     (not (notany-symmetric-test #'line-segments-intersection-segment edge-list))))
 
 (defun simple-polygon-p (polygon)
-  "Check if polygon is simple, ie. if no two edges intersect, assuming only point intersection are possible."
+  "Check if polygon is simple, ie. if no two edges intersect, assuming only point intersections are possible. This uses brute force, comparing each edge to every other edge."
   (let ((edge-list (edge-list-from-point-list polygon)))
     (notany-symmetric-test #'(lambda (x y)
 			       (line-segments-intersection-point x y :exclude-endpoints t))
