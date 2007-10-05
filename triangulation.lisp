@@ -31,6 +31,7 @@
 		 (>= (y c)(y a)))))))
 
 (defun xor (p q)
+  "Exlusive or logical operation."
   (if (or (and p q)
 	  (and (not p)(not q)))
       nil
@@ -48,6 +49,7 @@
 	      (left-p c d b)))))
 
 (defun intersect-p (a b c d)
+  "Do segments a->b and c->d intersect?"
   (if (intersect-proper-p a b c d)
       t
       (or (between-p a b c)
@@ -88,7 +90,8 @@
 ;;; ear removal method - O(2)
 
 (defclass ear-ring-node (poly-ring-node)
-  ((ear :accessor ear :initarg :ear)))
+  ((ear :accessor ear :initarg :ear))
+  (:documentation "Ring node with ear information."))
 
 (defun ear-init (polygon)
   "Takes a list of points and creates a ring initialized with ear data."
