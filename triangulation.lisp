@@ -106,6 +106,7 @@
     (values ring-head edge-list)))
 
 (defun remove-ear (node edge-list)
+  "Remove an ear centered on node from ring, returning new node, the removed ear and new edge list."
   (let ((v2 node))
     (let ((v1 (prev-node v2))
 	  (v3 (next-node v2)))

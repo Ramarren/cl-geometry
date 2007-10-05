@@ -38,5 +38,6 @@
 	   #:point-in-polygon-winding-number
 	   #:point-in-polygon-winding-p
 	   #:triangulate
-	   #:colinear-p))
+	   #:colinear-p
+	   #:decompose-complex-polygon-nondisjoint))
 
