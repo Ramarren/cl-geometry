@@ -139,7 +139,7 @@
 			edge-list))))
 
 (defun point-in-polygon-winding-number (point polygon)
-  "Determine if point is inside polygon using winding rule."
+  "Calculate winding number of a point."
   (let ((edge-list (edge-list-from-point-list polygon)))
     (let ((intersecting-edges (remove-if #'(lambda (edge)
 					     (filter-ray-intersection point edge))
@@ -152,5 +152,5 @@
 			  intersecting-edges)))))
 
 (defun point-in-polygon-winding-p (point polygon)
+  "Check if point is in polygon using winding number rule."
   (not (zerop (point-in-polygon-winding-number point polygon))))
-
