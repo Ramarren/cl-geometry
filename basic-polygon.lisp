@@ -38,6 +38,14 @@
 	    (next-node (prev-node tail)) head))
     head))
 
+(defun point-list-from-ring (ring-node)
+  (let ((point-list nil))
+    (iterate (for node initially ring-node then (next-node node))
+	     (until (and (eq node ring-node)
+			 (not (first-iteration-p))))
+	     (push (val node) point-list))
+    (nreverse point-list)))
+
 (defmethod construct-bounding-box ((object list));assumes all list are polygons...
   (iterate (for vertex in object)
 	   (minimizing (x vertex) into x-min)

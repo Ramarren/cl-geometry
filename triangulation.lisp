@@ -101,3 +101,40 @@
 					  (next-node node)
 					  edge-list)))
     (values ring-head edge-list)))
+
+(defun remove-ear (node edge-list)
+  (let ((v2 node))
+    (let ((v1 (prev-node v2))
+	  (v3 (next-node v2)))
+      (let ((v0 (prev-node v1))
+	    (v4 (next-node v3)))
+	(let ((ear (list (val v2)(val v1)(val v3))))
+	  (let ((new-edge-list (cons (make-instance 'line-segment
+						    :start (val v1)
+						    :end (val v3))
+				     (remove-if #'(lambda (edge)
+						    (or (point-equal-p (val v2) (start edge))
+							(point-equal-p (val v2) (end edge))))
+						edge-list))))
+	    (setf (next-node v1) v3
+		  (prev-node v3) v1
+		  (ear v1) (diagonal-p v0 v3 new-edge-list)
+		  (ear v3) (diagonal-p v1 v4 new-edge-list))
+	    (values v3 ear new-edge-list)))))))
+
+(defun triangulate (polygon)
+  "Triangulate polygon. Returns list of triangles."
+  (let ((num-vertices (length polygon))
+	(ear-list))
+    (multiple-value-bind (ring-head edge-list) (ear-init polygon)
+      (iterate (while (> num-vertices 3))
+	       (with node = ring-head)
+	       (if (ear node)
+		   (multiple-value-bind (new-node ear new-edge-list) (remove-ear node edge-list)
+		       (setf node new-node
+			     edge-list new-edge-list)
+		       (decf num-vertices)
+		       (push ear ear-list))
+		   (setf node (next-node node)))
+	       (finally (push (point-list-from-ring node) ear-list))))
+    ear-list))
