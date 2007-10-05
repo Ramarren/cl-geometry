@@ -106,7 +106,7 @@
 				(- (* (x v1)(y v2))(* (x v2)(y v1)))))
 			  polygon))))
 
-(defun filter-ray-intersections (point edge)
+(defun filter-ray-intersection (point edge)
   "Return t if edge does not intersect ray from point properly."
   (let ((line (line-from-segment edge)))
     (or (zerop (A line));line is horizontal
@@ -121,9 +121,10 @@
 (defun point-in-polygon-crossing (point polygon)
   "Determine if a point belongs to a polygon using crossing (oddeven) rule."
   (let ((edge-list (edge-list-from-point-list polygon)))
-    (oddp (count-if-not #'filter-ray-intersection edge-list))))
+    (oddp (count-if-not #'(lambda (edge)
+			    (filter-ray-intersection point edge))
+			edge-list))))
     
-
 (defun point-in-polygon-winding (point polygon)
   "Determine if point is inside polygon using winding rule."
   ;for every edge point is to the left of, check if it passes the horizontal ray, and in what direction
