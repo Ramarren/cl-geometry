@@ -16,6 +16,19 @@
   (and (= (x point1)(x point2))
        (= (y point1)(y point2))))
 
+(defun coords-to-points (coord-list)
+  "Coordinate list (x1 y1 x2 y2 ... xn yn) to point list"
+  (assert (zerop (mod (length coord-list) 2)))
+  (labels ((recurse-list (coord-list acc)
+	     (if (null coord-list)
+		 (nreverse acc)
+		 (recurse-list (cddr coord-list)
+			       (cons (make-instance 'point
+						    :x (car coord-list)
+						    :y (cadr coord-list))
+				     acc)))))
+    (recurse-list coord-list nil)))
+
 (defclass line-segment ()
   ((start :accessor start :initarg :start :initform (make-instance 'point))
    (end :accessor end :initarg :end :initform (make-instance 'point)))
