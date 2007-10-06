@@ -11,6 +11,8 @@
 	       (:file "basic-line" :depends-on ("bounding-box" "package"))
 	       (:file "basic-polygon" :depends-on ("basic-line"))
 	       (:file "triangulation" :depends-on ("basic-line" "trivial-geometry" "basic-polygon"))
-	       (:file "decomposition" :depends-on ("basic-line" "basic-polygon" "triangulation")))
-  :depends-on (:iterate))
+	       (:file "decomposition" :depends-on ("basic-line" "basic-polygon" "triangulation"))
+	       (:file "heap")
+	       (:file "bentley-ottmann" :depends-on ("heap" "triangulation")))
+  :depends-on (:iterate :trees))
 
