@@ -58,22 +58,23 @@
 	      (y2 (if (zerop (B line2))
 		      (y point)
 		      (line-y-at-x line2 (x point)))))
-					;(format t "~&~a ~f ~a ~f ~f ~f" lv y1 rv y2 (x instance)(y instance))
+	  ;(format t "~&~a ~f ~a ~f ~f ~f" lv y1 rv y2 (x point)(y point))
 	  (if (= y1 y2)
-	      (if (point-equal-p (right-endpoint lv)
-				 (right-endpoint rv))
-		  (> (if (zerop (B line1))
-			 (1- (y (right-endpoint lv)))
-			 (line-y-at-x line1 (1- (x point))))
-		     (if (zerop (B line2))
-			 (1- (y (right-endpoint rv)))
-			 (line-y-at-x line2 (1- (x point)))))
-		  (> (if (zerop (B line1))
-			 (y point)
-			 (line-y-at-x line1 (1+ (x point))))
-		     (if (zerop (B line2))
-			 (y point)
-			 (line-y-at-x line2 (1+ (x point))))))
+	      (progn
+		(if (point-equal-p (right-endpoint lv)
+				   (right-endpoint rv))
+		    (> (if (zerop (B line1))
+			   (1- (y (right-endpoint lv)))
+			   (line-y-at-x line1 (1- (x point))))
+		       (if (zerop (B line2))
+			   (1- (y (right-endpoint rv)))
+			   (line-y-at-x line2 (1- (x point)))))
+		    (> (if (zerop (B line1))
+			   (y point)
+			   (line-y-at-x line1 (1+ (x point))))
+		       (if (zerop (B line2))
+			   (y point)
+			   (line-y-at-x line2 (1+ (x point)))))))
 	      (> y1 y2))))))
 
 (defclass sweep-line (point)
@@ -93,6 +94,7 @@
 (defun insert-edge (edge sweep-line)
   "Insert new edge into sweep-line, returns a cons of neighbouring edges."
   (trees:insert (edge-tree sweep-line) edge)
+  (assert (check-tree-integrity sweep-line))
   (let ((ne-pos (trees:position edge (edge-tree sweep-line)))
 	(t-size (trees:size (edge-tree sweep-line))))
     (cond
@@ -108,6 +110,7 @@
   "Delete an edge from sweep-line, returns a cons of newly neighbouring edges."
   (let ((pos (trees:position edge (edge-tree sweep-line))))
     (trees:delete edge (edge-tree sweep-line))
+    (assert (check-tree-integrity sweep-line))
     (cond
       ((zerop (trees:size (edge-tree sweep-line)))
        (cons nil nil))
@@ -117,6 +120,28 @@
        (cons (trees:select (edge-tree sweep-line) 0) nil))
       (t (cons (trees:select (edge-tree sweep-line) (1- pos))
 	       (trees:select (edge-tree sweep-line) pos))))))
+
+(defun check-node-integrity (node sweep-line)
+  (and (or (trees::null-node-p (trees::left node) (edge-tree sweep-line))
+	   (trees::null-node-p node (edge-tree sweep-line))
+	   (not (order-line-segments-at-point (trees::datum node) (trees::datum (trees::left node)) sweep-line)))
+       (or (trees::null-node-p (trees::right node) (edge-tree sweep-line))
+	   (trees::null-node-p node (edge-tree sweep-line))
+	   (order-line-segments-at-point (trees::datum node) (trees::datum (trees::right node)) sweep-line))
+       (or (trees::null-node-p (trees::left node) (edge-tree sweep-line))
+	   (check-node-integrity (trees::left node) sweep-line))
+       (or (trees::null-node-p (trees::right node) (edge-tree sweep-line))
+	   (check-node-integrity (trees::right node) sweep-line))))
+
+(defun check-tree-integrity (sweep-line)
+  (format t "~&Integrity check at: ~a~&" sweep-line)
+  (let ((root-node (trees::root-node (edge-tree sweep-line))))
+    (let ((integrity (check-node-integrity root-node sweep-line)))
+      (if integrity
+	  t
+	  (progn
+	    (trees::pprint-tree (edge-tree sweep-line))
+	    nil)))))
 
 (defun recurse-shamos-hoey (event-queue sweep-line)
   "Recurse down event list."
@@ -160,6 +185,7 @@
 
 (defun recurse-bentley-ottmann (event-queue sweep-line acc)
   ;(print (car event-queue))
+  ;(assert (check-tree-integrity sweep-line))
   (if (heap-empty event-queue)
       (nreverse acc)
       (let ((event (nheap-extract event-queue)))
@@ -253,7 +279,11 @@
 
 (defun bentley-ottmann (edge-list)
   "Return a list of intersection points (events)."
-  (let ((event-queue (heapify (create-initial-event-list edge-list) #'point-sort-fun))
-	(sweep-line (make-instance 'sweep-line)))
-    (recurse-bentley-ottmann event-queue sweep-line nil)))
-  
+  (let ((exclude-special-cases (remove-if #'(lambda (edge)
+						      (or (zerop (B (line-from-segment edge)))
+							  (zerop (A (line-from-segment edge)))
+							  (zerop (line-segment-length edge))))
+						  edge-list)))
+    (let ((event-queue (heapify (create-initial-event-list exclude-special-cases) #'point-sort-fun))
+	  (sweep-line (make-instance 'sweep-line)))
+      (recurse-bentley-ottmann event-queue sweep-line nil))))
