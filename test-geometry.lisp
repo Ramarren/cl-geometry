@@ -1,5 +1,6 @@
 (defpackage :test-geometry (:use :common-lisp :2d-geometry :vecto)
-	    (:export #:test-triangulate))
+	    (:export #:test-triangulate
+		     #:test-decomposition))
 
 (in-package :test-geometry)
 
