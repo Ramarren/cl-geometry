@@ -135,3 +135,7 @@
   (let ((event-queue (sort (create-initial-event-list edge-list) #'point-sort-fun))
 	(sweep-line (make-instance 'sweep-line)))
     (recurse-shamos-hoey event-queue sweep-line)))
+
+(defun simple-polygon-sh-p (polygon)
+  "Check if polygon is simple using Shamos-Hoey algorithm."
+  (not (shamos-hoey (edge-list-from-point-list polygon))))

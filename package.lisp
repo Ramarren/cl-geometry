@@ -39,5 +39,8 @@
 	   #:point-in-polygon-winding-p
 	   #:triangulate
 	   #:colinear-p
-	   #:decompose-complex-polygon-nondisjoint))
+	   #:decompose-complex-polygon-nondisjoint
+	   #:simple-polygon-p
+	   #:simple-polygon-sh-p
+	   #:frustrated-polygon-p))
 
