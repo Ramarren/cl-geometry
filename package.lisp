@@ -1,6 +1,6 @@
 (defpackage :2d-geometry
   (:nicknames :geometry)
-  (:use :common-lisp :iterate)
+  (:use :common-lisp :iterate :ramarren-util)
   (:export #:distance
 	   #:circumference-circle
 	   #:area-circle
@@ -42,5 +42,6 @@
 	   #:decompose-complex-polygon-nondisjoint
 	   #:simple-polygon-p
 	   #:simple-polygon-sh-p
-	   #:frustrated-polygon-p))
+	   #:frustrated-polygon-p
+	   #:shamos-hoey))
 

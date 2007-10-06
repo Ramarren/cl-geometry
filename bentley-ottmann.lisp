@@ -139,3 +139,93 @@
 (defun simple-polygon-sh-p (polygon)
   "Check if polygon is simple using Shamos-Hoey algorithm."
   (not (shamos-hoey (edge-list-from-point-list polygon))))
+
+(defun right-endpoint (edge)
+  (if (point-sort-fun (start edge)(end edge))
+      (end edge)
+      (start edge)))
+
+(defun recurse-bentley-ottmann (event-queue sweep-line acc)
+  (if (heap-empty event-queue)
+      (nreverse acc)
+      (let ((event (nheap-extract event-queue)))
+	(print event)
+	(etypecase event
+	  (event-endpoint
+	   (if (eql (direction event) 'left)
+	       (let ((new-edge (edge event)))
+		 (setf (x sweep-line) (x event)
+		       (y sweep-line) (y event))
+		 (let ((neighbours (insert-edge new-edge sweep-line)))
+		   (when (and neighbours
+			      (destructuring-bind (upper . lower) neighbours
+				(when (and upper
+					   (intersect-proper-p (start upper)(end upper)(start new-edge)(end new-edge)))
+				  (let ((intersection-point (line-segments-intersection-point upper new-edge)))
+				    (let ((inters (make-instance 'event-intersection
+								 :x (x intersection-point)
+								 :y (y intersection-point)
+								 :edge1 upper
+								 :edge2 new-edge)))
+				      (nheap-insert inters event-queue))))
+				(when (and lower
+					   (intersect-proper-p (start lower)(end lower)(start new-edge)(end new-edge)))
+				  (let ((intersection-point (line-segments-intersection-point new-edge lower)))
+				    (let ((inters (make-instance 'event-intersection
+								 :x (x intersection-point)
+								 :y (y intersection-point)
+								 :edge1 new-edge
+								 :edge2 lower)))
+				      (nheap-insert inters event-queue))))))))
+		 (recurse-bentley-ottmann event-queue sweep-line acc))
+	       (destructuring-bind (upper . lower) (delete-edge (edge event) sweep-line)
+		 (setf (x sweep-line) (x event)
+		       (y sweep-line) (y event))
+		 (when (and upper
+			    lower
+			    (intersect-proper-p (start upper)(end upper)(start lower)(end lower)))
+		   (let ((intersection-point (line-segments-intersection-point upper lower)))
+		     (let ((inters (make-instance 'event-intersection
+						  :x (x intersection-point)
+						  :y (y intersection-point)
+						  :edge1 upper
+						  :edge2 lower)))
+		       (nheap-insert inters event-queue))))
+		 (recurse-bentley-ottmann (cdr event-queue) sweep-line acc))))
+	  (event-intersection
+	   (delete-edge (edge1 event) sweep-line)
+	   (delete-edge (edge2 event) sweep-line)
+	   (setf (x sweep-line) (x event)
+		 (y sweep-line) (y event))
+	   (destructuring-bind (upper1 lower1) (insert-edge (edge1 event) sweep-line)
+	     (destructuring-bind (upper2 lower2) (insert-edge (edge2 event) sweep-line)
+	       (assert (eql upper1 (edge2 event)))
+	       (assert (eql lower2 (edge1 event)))
+	       (when (and lower1
+			  (intersect-proper-p event (right-endpoint (edge1 event)) (start lower1)(end lower1)))
+		 (let ((intersection-point (line-segments-intersection-point (edge1 event) lower1)))
+		   (let ((inters (make-instance 'event-intersection
+						:x (x intersection-point)
+						:y (y intersection-point)
+						:edge1 (edge1 event)
+						:edge2 lower1)))
+		     (push inters acc)
+		     (nheap-insert inters event-queue))))
+	       (when (and upper2
+			  (intersect-proper-p event (right-endpoint (edge2 event)) (start upper2)(end upper2)))
+		 (let ((intersection-point (line-segments-intersection-point (edge2 event) upper2)))
+		   (let ((inters (make-instance 'event-intersection
+						:x (x intersection-point)
+						:y (y intersection-point)
+						:edge1 upper2
+						:edge2 (edge2 event))))
+		     (push inters acc)
+		     (nheap-insert inters event-queue))))
+	       (recurse-bentley-ottmann event-queue sweep-line acc))))))))
+
+(defun bentley-ottmann (edge-list)
+  "Return a list of intersection points (events)."
+  (let ((event-queue (heapify (create-initial-event-list edge-list) #'point-sort-fun))
+	(sweep-line (make-instance 'sweep-line)))
+    (recurse-bentley-ottmann event-queue sweep-line nil)))
+  
