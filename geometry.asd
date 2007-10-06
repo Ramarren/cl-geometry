@@ -5,7 +5,7 @@
 (defsystem :geometry
   :description "Twodimensional geometry."
   :version "0.0.1"
-  :components ((:file "package")
+  :components ((:file "package" :depends-on ("heap"))
 	       (:file "trivial-geometry" :depends-on ("package"))
 	       (:file "bounding-box" :depends-on ("package"))
 	       (:file "basic-line" :depends-on ("bounding-box" "package"))

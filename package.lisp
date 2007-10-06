@@ -1,6 +1,6 @@
 (defpackage :2d-geometry
   (:nicknames :geometry)
-  (:use :common-lisp :iterate :ramarren-util)
+  (:use :common-lisp :iterate :ramarren-utils)
   (:export #:distance
 	   #:circumference-circle
 	   #:area-circle
