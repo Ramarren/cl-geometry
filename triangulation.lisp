@@ -59,13 +59,14 @@
 
 (defun possible-diagonal-p (ring-diag)
   "Checks if ring-diag does not intersect any edge in a ring."
-  (iterate (for node initially (start ring-diag) then (next-node node))
-	   (until (and (eql node (start ring-diag))(not (first-iteration-p))))
-	   (and (not (eql (start ring-diag) node))
-		(not (eql (end ring-diag) node))
-		(not (eql (start ring-diag) (next-node node)))
-		(not (eql (end ring-diag) (next-node node)))
-		(intersect-p (start ring-diag)(end ring-diag) node (next-node node)))))
+  (not (iterate (for node initially (start ring-diag) then (next-node node))
+		(until (and (eql node (start ring-diag))(not (first-iteration-p))))
+		(reducing (and (not (eql (start ring-diag) node))
+			       (not (eql (end ring-diag) node))
+			       (not (eql (start ring-diag) (next-node node)))
+			       (not (eql (end ring-diag) (next-node node)))
+			       (intersect-p (start ring-diag)(end ring-diag) node (next-node node)))
+			  by #'or initial-value nil))))
 
 (defun in-cone-p (ring-node b)
   "Is line segment ring-node->b in cone defined by angle with vertex defined by ring-node?"
