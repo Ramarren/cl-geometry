@@ -16,7 +16,7 @@
   "Order points by increasing x then y."
   (if (= (x point1)(x point2))
       (if (= (y point1)(y point2))
-	  (eql (direction point1) 'left)
+	  (eql (direction point1) 'right)
 	  (< (y point1)(y point2)))
       (< (x point1)(x point2))))
 
@@ -53,12 +53,12 @@
   "Create a tree, use closure over the sweep line as ordering function."
   (declare (ignore initargs))
   (setf (edge-tree instance)
-	(trees:make-binary-tree :avl
+	(trees:make-binary-tree :red-black
 				:eqfun #'eql
 				:keyfun #'identity
 				:compfun #'(lambda (lv rv)
-					     ;(format t "~a ~a~&" lv rv)
-					     (if (eq lv rv) nil
+					     (if (eq lv rv)
+						 nil
 						 (let ((line1 (line-from-segment lv))
 						       (line2 (line-from-segment rv)))
 						   (let ((y1 (if (zerop (B line1))
@@ -67,6 +67,7 @@
 							 (y2 (if (zerop (B line2))
 								 (y instance)
 								 (line-y-at-x line2 (x instance)))))
+						     ;(format t "~a ~a ~a ~a~&" lv y1 rv y2)
 						     (if (= y1 y2)
 							 (> (if (zerop (B line1))
 								(y instance)
@@ -99,7 +100,7 @@
        (cons nil nil))
       ((zerop pos)
        (cons nil (trees:select (edge-tree sweep-line) 0)))
-      ((=  pos (trees:size (edge-tree sweep-line)))
+      ((= pos (trees:size (edge-tree sweep-line)))
        (cons (trees:select (edge-tree sweep-line) 0) nil))
       (t (cons (trees:select (edge-tree sweep-line) (1- pos))
 	       (trees:select (edge-tree sweep-line) pos))))))
