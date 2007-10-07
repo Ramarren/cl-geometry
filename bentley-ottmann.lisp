@@ -104,7 +104,7 @@
 (defun insert-edge (edge sweep-line)
   "Insert new edge into sweep-line, returns a cons of neighbouring edges."
   (trees:insert (edge-tree sweep-line) edge)
-  (assert (check-tree-integrity sweep-line))
+  ;(assert (check-tree-integrity sweep-line))
   (let ((ne-pos (trees:position edge (edge-tree sweep-line)))
 	(t-size (trees:size (edge-tree sweep-line))))
     (cond
@@ -120,7 +120,7 @@
   "Delete an edge from sweep-line, returns a cons of newly neighbouring edges."
   (let ((pos (trees:position edge (edge-tree sweep-line))))
     (trees:delete edge (edge-tree sweep-line))
-    (assert (check-tree-integrity sweep-line))
+    ;(assert (check-tree-integrity sweep-line))
     ;(print edge)
     (when (null pos)
       (trees:pprint-tree (edge-tree sweep-line)))
@@ -258,6 +258,51 @@
 
 (defun bentley-ottmann (edge-list)
   "Return a list of intersection points (events)."
-  (let ((event-queue (heapify (create-initial-event-list event-list) #'point-sort-fun))
+  (let ((event-queue (heapify (create-initial-event-list edge-list) #'point-sort-fun))
 	(sweep-line (make-instance 'sweep-line)))
     (recurse-bentley-ottmann event-queue sweep-line nil)))
+
+(defclass taint-segment (line-segment)
+  ((taint :accessor taint :initform nil))
+  (:documentation "Extend line-segment with taint boolean."))
+
+(defun decompose-complex-polygon-bentley-ottmann (polygon)
+  "Decompose polygon using bentley-ottmann, hopefully in something close to quadratic time."
+  (if (simple-polygon-sh-p polygon)
+      (list polygon)
+      (let ((ring-index (collect-ring-nodes
+			 (double-linked-ring-from-point-list polygon))))
+	(let ((ring-edges (edge-list-from-point-list ring-index 'taint-segment)))
+	  (let ((in-points (bentley-ottmann ring-edges))
+		(simple-polys nil))
+	    (dolist (tk in-points)
+	      (let ((edge1 (edge1 tk))
+		    (edge2 (edge2 tk)))
+		(unless (or (taint edge1)
+			    (taint edge2));vertex surgery will invalidate edges
+		  (let ((in1 (start edge1))
+			(out1 (end edge1))
+			(in2 (start edge2))
+			(out2 (end edge2)))
+		    (let ((v1 (make-instance 'poly-ring-node
+					     :val tk
+					     :prev in1
+					     :next out2))
+			  (v2 (make-instance 'poly-ring-node
+					     :val tk
+					     :prev in2
+					     :next out1)))
+		      (push v1 ring-index)
+		      (push v2 ring-index)
+		      (setf (taint edge1) t
+			    (taint edge2) t)
+		      (setf (next-node in1) v1)
+		      (setf (prev-node out1) v2)
+		      (setf (next-node in2) v2)
+		      (setf (prev-node out2) v1))))))
+	    (iterate (while ring-index)
+		     (push (collect-ring-nodes (car ring-index)) simple-polys)
+		     (setf ring-index (set-difference ring-index (car simple-polys))))
+	    (reduce #'append
+		    (mapcar #'decompose-complex-polygon-bentley-ottmann ;due to tainting the polygon might not have been completely decomposed
+			    simple-polys)))))))
