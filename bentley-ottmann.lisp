@@ -305,4 +305,6 @@
 		     (setf ring-index (set-difference ring-index (car simple-polys))))
 	    (reduce #'append
 		    (mapcar #'decompose-complex-polygon-bentley-ottmann ;due to tainting the polygon might not have been completely decomposed
-			    simple-polys)))))))
+			    (mapcar #'(lambda (poly)
+					(mapcar #'val poly))
+				    simple-polys))))))))
