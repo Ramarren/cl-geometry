@@ -71,9 +71,10 @@
     (recurse-list lst (cdr lst))))
 
 (defun frustrated-polygon-p (polygon)
-  "Check if any two colinear edges intersect."
+  "Check if there are any zero length edges or that any two colinear edges intersect."
   (let ((edge-list (edge-list-from-point-list polygon)))
-    (not (notany-symmetric-test #'line-segments-intersection-segment edge-list))))
+    (or (some #'(lambda (e) (zerop (line-segment-length e))) edge-list)
+	(not (notany-symmetric-test #'line-segments-intersection-segment edge-list)))))
 
 (defun simple-polygon-p (polygon)
   "Check if polygon is simple, ie. if no two edges intersect, assuming only point intersections are possible. This uses brute force, comparing each edge to every other edge."

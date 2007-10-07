@@ -47,11 +47,13 @@
     acc))
 
 (defun right-endpoint (edge)
+  "Return right endpoint of an edge."
   (if (point-sort-fun (start edge)(end edge))
       (end edge)
       (start edge)))
 
 (defun left-endpoint (edge)
+  "Return left endpoint of an edge."
   (if (point-sort-fun (start edge)(end edge))
       (start edge)
       (end edge)))
@@ -133,6 +135,7 @@
 	       (trees:select (edge-tree sweep-line) pos))))))
 
 (defun check-node-integrity (node sweep-line)
+  "Verify sweep line tree node integrity, recursively descending into children."
   (and (or (trees::null-node-p (trees::left node) (edge-tree sweep-line))
 	   (trees::null-node-p node (edge-tree sweep-line))
 	   (not (order-line-segments-at-point (trees::datum node) (trees::datum (trees::left node)) sweep-line)))
@@ -145,6 +148,7 @@
 	   (check-node-integrity (trees::right node) sweep-line))))
 
 (defun check-tree-integrity (sweep-line)
+  "Verify sweep line tree integrity."
   ;(format t "~&Integrity check at: ~a~&" sweep-line)
   (let ((root-node (trees::root-node (edge-tree sweep-line))))
     (let ((integrity (check-node-integrity root-node sweep-line)))
@@ -191,6 +195,7 @@
 
 
 (defun add-if-intersection (edge1 edge2 event-queue sweep-line)
+  "Add intersection to event queue if edge1 intersects edge2."
   (when (and edge1
 	     edge2
 	     (intersect-p (start edge1)(end edge1)(start edge2)(end edge2)))
@@ -205,10 +210,12 @@
 	      (nheap-insert inters event-queue)))))))
 
 (defun move-sweep-line (sweep-line x y)
+  "Move sweep line to new location."
   (setf (x sweep-line) x
 	(y sweep-line) y))
 
 (defun recurse-bentley-ottmann (event-queue sweep-line acc)
+  "Recurse down event queue."
   ;(print (car event-queue))
   ;(assert (check-tree-integrity sweep-line))
   (if (heap-empty event-queue)
@@ -251,11 +258,6 @@
 
 (defun bentley-ottmann (edge-list)
   "Return a list of intersection points (events)."
-  (let ((exclude-special-cases (remove-if #'(lambda (edge)
-						      (or ;(zerop (B (line-from-segment edge)))
-							  ;(zerop (A (line-from-segment edge)))
-							  (zerop (line-segment-length edge))))
-						  edge-list)))
-    (let ((event-queue (heapify (create-initial-event-list exclude-special-cases) #'point-sort-fun))
-	  (sweep-line (make-instance 'sweep-line)))
-      (recurse-bentley-ottmann event-queue sweep-line nil))))
+  (let ((event-queue (heapify (create-initial-event-list event-list) #'point-sort-fun))
+	(sweep-line (make-instance 'sweep-line)))
+    (recurse-bentley-ottmann event-queue sweep-line nil)))
