@@ -1,6 +1,7 @@
-(defpackage :test-geometry (:use :common-lisp :2d-geometry :vecto)
+(defpackage :test-geometry (:use :common-lisp :2d-geometry :vecto :iterate)
 	    (:export #:test-triangulate
-		     #:test-decomposition))
+		     #:test-decomposition
+		     #:test-bentley-ottmann))
 
 (in-package :test-geometry)
 
@@ -44,3 +45,29 @@
 	(line-to (x (car tk))(y (car tk)))
 	(fill-path)))
     (save-png "test-geometry.png")))
+
+(defun test-bentley-ottmann (polygon)
+  (if (frustrated-polygon-p polygon)
+      'frustrated
+      (let ((in-points (bentley-ottmann (geometry::edge-list-from-point-list polygon))))
+	(with-canvas (:width 400 :height 400)
+	  (scale 4 4)
+	  (set-rgb-stroke 0 0 1.0)
+	  (set-line-width 1/5)
+	  (move-to (x (car polygon))
+		   (y (car polygon)))
+	  (dolist (tk polygon)
+	    (line-to (x tk)(y tk)))
+	  (line-to (x (car polygon))(y (car polygon)))
+	  (stroke)
+	  (set-rgba-fill 0 1.0 0 0.4)
+	  (dolist (tk in-points)
+	    (set-rgba-stroke (random 1.0) (random 1.0) (random 0.5) 0.5)
+	    (move-to 0 (y tk))
+	    (line-to 100 (y tk))
+	    (move-to (x tk) 0)
+	    (line-to (x tk) 100)
+	    (stroke)
+	    (centered-circle-path (x tk)(y tk) 1)
+	    (fill-path))
+	  (save-png "test-geometry.png")))))

@@ -43,5 +43,6 @@
 	   #:simple-polygon-p
 	   #:simple-polygon-sh-p
 	   #:frustrated-polygon-p
-	   #:shamos-hoey))
+	   #:shamos-hoey
+	   #:bentley-ottmann))
 
