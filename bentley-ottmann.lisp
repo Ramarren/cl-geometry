@@ -17,8 +17,8 @@
   (if (= (x point1)(x point2))
       (if (= (y point1)(y point2))
 	  (if (typep point1 'event-endpoint)
-	      (eql (direction point1) 'right)
-	      nil)
+	      (if (eql (direction point1) 'right)
+		  nil))
 	  (< (y point1)(y point2)))
       (< (x point1)(x point2))))
 
@@ -47,7 +47,18 @@
 	    acc))
     acc))
 
+(defun right-endpoint (edge)
+  (if (point-sort-fun (start edge)(end edge))
+      (end edge)
+      (start edge)))
+
+(defun left-endpoint (edge)
+  (if (point-sort-fun (start edge)(end edge))
+      (start edge)
+      (end edge)))
+
 (defun order-line-segments-at-point (lv rv point)
+  "Return t if lv is above rv at point."
   (if (eq lv rv)
       nil
       (let ((line1 (line-from-segment lv))
@@ -59,23 +70,19 @@
 		      (y point)
 		      (line-y-at-x line2 (x point)))))
 	  ;(format t "~&~a ~f ~a ~f ~f ~f" lv y1 rv y2 (x point)(y point))
-	  (if (= y1 y2)
-	      (progn
-		(if (point-equal-p (right-endpoint lv)
-				   (right-endpoint rv))
-		    (> (if (zerop (B line1))
-			   (1- (y (right-endpoint lv)))
-			   (line-y-at-x line1 (1- (x point))))
-		       (if (zerop (B line2))
-			   (1- (y (right-endpoint rv)))
-			   (line-y-at-x line2 (1- (x point)))))
-		    (> (if (zerop (B line1))
-			   (y point)
-			   (line-y-at-x line1 (1+ (x point))))
-		       (if (zerop (B line2))
-			   (y point)
-			   (line-y-at-x line2 (1+ (x point)))))))
-	      (> y1 y2))))))
+	  (if (not (= y1 y2))
+	      (> y1 y2);normal case
+	      (cond;special cases - intersections
+		((zerop (B line1))
+		 t)
+		((zerop (B line2))
+		 nil)
+		((or (point-equal-p point (right-endpoint lv))
+		     (point-equal-p point (right-endpoint rv)));at least one line terminates
+		 (< (- (/ (A line1) (B line1)))
+		    (- (/ (A line2) (B line2)))));order by reverse slopes
+		(t (> (- (/ (A line1) (B line1)))
+		      (- (/ (A line2) (B line2)))))))))));order by slopes
 
 (defclass sweep-line (point)
   ((edge-tree :accessor edge-tree))
@@ -98,7 +105,7 @@
   (let ((ne-pos (trees:position edge (edge-tree sweep-line)))
 	(t-size (trees:size (edge-tree sweep-line))))
     (cond
-      ((= t-size 1) nil)
+      ((= t-size 1) (cons nil nil))
       ((= (1+ ne-pos) t-size)
        (cons (trees:select (edge-tree sweep-line) (1- ne-pos)) nil))
       ((zerop ne-pos)
@@ -111,6 +118,9 @@
   (let ((pos (trees:position edge (edge-tree sweep-line))))
     (trees:delete edge (edge-tree sweep-line))
     (assert (check-tree-integrity sweep-line))
+    (print edge)
+    (when (null pos)
+      (trees:pprint-tree (edge-tree sweep-line)))
     (cond
       ((zerop (trees:size (edge-tree sweep-line)))
        (cons nil nil))
@@ -178,10 +188,23 @@
   "Check if polygon is simple using Shamos-Hoey algorithm."
   (not (shamos-hoey (edge-list-from-point-list polygon))))
 
-(defun right-endpoint (edge)
-  (if (point-sort-fun (start edge)(end edge))
-      (end edge)
-      (start edge)))
+
+(defun add-if-intersection (edge1 edge2 event-queue sweep-line)
+  (when (and edge1
+	     edge2
+	     (intersect-p (start edge1)(end edge1)(start edge2)(end edge2))
+	     (not (point-equal-p (start edge1)(start edge2)))
+	     (not (point-equal-p (start edge1)(end edge2)))
+	     (not (point-equal-p (end edge1)(start edge2)))
+	     (not (point-equal-p (end edge1)(end edge2))))
+    (let ((intersection-point (line-segments-intersection-point edge1 edge2)))
+      (let ((inters (make-instance 'event-intersection
+				   :x (x intersection-point)
+				   :y (y intersection-point)
+				   :edge1 edge1
+				   :edge2 edge2)))
+	(if (point-sort-fun sweep-line inters)
+	    (nheap-insert inters event-queue))))))
 
 (defun recurse-bentley-ottmann (event-queue sweep-line acc)
   ;(print (car event-queue))
@@ -189,9 +212,9 @@
   (if (heap-empty event-queue)
       (nreverse acc)
       (let ((event (nheap-extract event-queue)))
-	;(format t "~&~a ~a~&" event (if (typep event 'event-endpoint)
-	;			      (direction event)
-	;			      nil))
+	(format t "~&~a ~a~&" event (if (typep event 'event-endpoint)
+				      (direction event)
+				      nil))
 	;(format t "~f ~f~&" (x sweep-line) (y sweep-line))
 	;(trees:pprint-tree (edge-tree sweep-line))
 	(etypecase event
@@ -201,87 +224,35 @@
 		 (setf (x sweep-line) (x event)
 		       (y sweep-line) (y event))
 		 (let ((neighbours (insert-edge new-edge sweep-line)))
-		   (when (and neighbours
-			      (destructuring-bind (upper . lower) neighbours
-				(when (and upper
-					   (intersect-proper-p (start upper)(end upper)(start new-edge)(end new-edge)))
-				  (let ((intersection-point (line-segments-intersection-point upper new-edge)))
-				    (let ((inters (make-instance 'event-intersection
-								 :x (x intersection-point)
-								 :y (y intersection-point)
-								 :edge1 upper
-								 :edge2 new-edge)))
-				      (nheap-insert inters event-queue))))
-				(when (and lower
-					   (intersect-proper-p (start lower)(end lower)(start new-edge)(end new-edge)))
-				  (let ((intersection-point (line-segments-intersection-point new-edge lower)))
-				    (let ((inters (make-instance 'event-intersection
-								 :x (x intersection-point)
-								 :y (y intersection-point)
-								 :edge1 new-edge
-								 :edge2 lower)))
-				      (nheap-insert inters event-queue))))))))
-		 (recurse-bentley-ottmann event-queue sweep-line acc))
+		   (when neighbours
+		     (destructuring-bind (upper . lower) neighbours
+		       (add-if-intersection upper new-edge event-queue sweep-line)
+		       (add-if-intersection new-edge lower event-queue sweep-line)))
+		   (recurse-bentley-ottmann event-queue sweep-line acc)))
 	       (destructuring-bind (upper . lower) (delete-edge (edge event) sweep-line)
 		 (setf (x sweep-line) (x event)
 		       (y sweep-line) (y event))
-		 (when (and upper
-			    lower
-			    (intersect-proper-p (start upper)(end upper)(start lower)(end lower)))
-		   (let ((intersection-point (line-segments-intersection-point upper lower)))
-		     (let ((inters (make-instance 'event-intersection
-						  :x (x intersection-point)
-						  :y (y intersection-point)
-						  :edge1 upper
-						  :edge2 lower)))
-		       (if (or (>= (x inters) (x sweep-line))
-			       (and (= (x inters)(x sweep-line))
-				    (>= (y inters) (y sweep-line))))
-			   (nheap-insert inters event-queue)))))
+		 (add-if-intersection upper lower event-queue sweep-line)
 		 (recurse-bentley-ottmann event-queue sweep-line acc))))
-	  (event-intersection
-	   (push event acc)
-	   (delete-edge (edge1 event) sweep-line)
-	   (delete-edge (edge2 event) sweep-line)
-	   (setf (x sweep-line) (x event)
-		 (y sweep-line) (y event))
-	   (destructuring-bind (upper1 . lower1) (let ((in-e1 (insert-edge (edge1 event) sweep-line)))
-						 (if in-e1
-						     in-e1
-						     (cons nil nil)))
-	     (declare (ignore upper1))
-	     (destructuring-bind (upper2 . lower2) (let ((in-e2 (insert-edge (edge2 event) sweep-line)))
-						     (if in-e2
-							 in-e2
-							 (cons nil nil)))
-	       (declare (ignore lower2))
-	       (when (and lower1
-			  (intersect-proper-p event (right-endpoint (edge1 event)) (start lower1)(end lower1)))
-		 (let ((intersection-point (line-segments-intersection-point (edge1 event) lower1)))
-		   (let ((inters (make-instance 'event-intersection
-						:x (x intersection-point)
-						:y (y intersection-point)
-						:edge1 (edge1 event)
-						:edge2 lower1)))
-		     (push inters acc)
-		     (nheap-insert inters event-queue))))
-	       (when (and upper2
-			  (intersect-proper-p event (right-endpoint (edge2 event)) (start upper2)(end upper2)))
-		 (let ((intersection-point (line-segments-intersection-point (edge2 event) upper2)))
-		   (let ((inters (make-instance 'event-intersection
-						:x (x intersection-point)
-						:y (y intersection-point)
-						:edge1 upper2
-						:edge2 (edge2 event))))
-		     (push inters acc)
-		     (nheap-insert inters event-queue))))
-	       (recurse-bentley-ottmann event-queue sweep-line acc))))))))
+	   (event-intersection
+	    (push event acc)
+	    (delete-edge (edge1 event) sweep-line)
+	    (delete-edge (edge2 event) sweep-line)
+	    (setf (x sweep-line) (x event)
+		  (y sweep-line) (y event))
+	    (destructuring-bind (upper1 . lower1) (insert-edge (edge1 event) sweep-line)
+	      (declare (ignore upper1))
+	      (destructuring-bind (upper2 . lower2) (insert-edge (edge2 event) sweep-line)
+		(declare (ignore lower2))
+		(add-if-intersection (edge1 event) lower1 event-queue sweep-line)
+		(add-if-intersection upper2 (edge2 event) event-queue sweep-line)
+	    (recurse-bentley-ottmann event-queue sweep-line acc))))))))
 
 (defun bentley-ottmann (edge-list)
   "Return a list of intersection points (events)."
   (let ((exclude-special-cases (remove-if #'(lambda (edge)
-						      (or (zerop (B (line-from-segment edge)))
-							  (zerop (A (line-from-segment edge)))
+						      (or ;(zerop (B (line-from-segment edge)))
+							  ;(zerop (A (line-from-segment edge)))
 							  (zerop (line-segment-length edge))))
 						  edge-list)))
     (let ((event-queue (heapify (create-initial-event-list exclude-special-cases) #'point-sort-fun))
