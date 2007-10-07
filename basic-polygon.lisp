@@ -5,13 +5,13 @@
 ;;;; Express polygon a simple list of points.
 
 ;;;or a list od edges
-(defun edge-list-from-point-list (polygon)
+(defun edge-list-from-point-list (polygon &optional (edge-type 'line-segment))
   "Change polygon represented as a list of points into a list of edges (line segments)."
   (let ((vertex-zero (car polygon)))
     (maplist #'(lambda (lst)
 		 (if (null (cadr lst))
-		     (make-instance 'line-segment :start (car lst) :end vertex-zero)
-		     (make-instance 'line-segment :start (car lst) :end (cadr lst))))
+		     (make-instance edge-type :start (car lst) :end vertex-zero)
+		     (make-instance edge-type :start (car lst) :end (cadr lst))))
 	     polygon)))
 
 ;;; or double-linked ring
