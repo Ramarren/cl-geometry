@@ -73,11 +73,12 @@
 	  (if (not (= y1 y2))
 	      (> y1 y2);normal case
 	      (cond;special cases - intersections
-		((zerop (B line1))
+		((zerop (B line1));verticals always above at intersections
 		 t)
 		((zerop (B line2))
 		 nil)
-		((or (point-equal-p point (right-endpoint lv))
+		((or (point-equal-p (right-endpoint lv) (right-endpoint rv))
+		     (point-equal-p point (right-endpoint lv))
 		     (point-equal-p point (right-endpoint rv)));at least one line terminates
 		 (< (- (/ (A line1) (B line1)))
 		    (- (/ (A line2) (B line2)))));order by reverse slopes
