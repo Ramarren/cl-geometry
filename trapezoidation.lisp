@@ -55,8 +55,6 @@
 								  :y max-y)))
 			 (event (car event-queue)))
 		     (trees:dotree (tk (edge-tree sweep-line))
-		       (print prev-edge)
-		       (print tk)
 		       ;ignore edges on bounding box
 		       (unless (or (and (= (y (start tk)) min-y)
 					(= (y (end tk)) min-y))
@@ -76,7 +74,6 @@
 				 trapezoids))
 			 (setf prev-edge tk)))
 		     ;terminate with upper bounding edge
-		     (print prev-edge)
 		     (push (coords-to-points
 			    (list (x sweep-line)(y (start prev-edge))
 				  (x event)(y (lines-intersection-point
