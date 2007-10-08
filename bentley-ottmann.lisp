@@ -194,7 +194,7 @@
   (not (shamos-hoey (edge-list-from-point-list polygon))))
 
 
-(defun add-if-intersection (edge1 edge2 event-queue sweep-line)
+(defun add-if-intersection (edge1 edge2 event-queue current-point)
   "Add intersection to event queue if edge1 intersects edge2."
   (when (and edge1
 	     edge2
@@ -206,7 +206,7 @@
 				     :y (y intersection-point)
 				     :edge1 edge1
 				     :edge2 edge2)))
-	  (if (point-sort-fun sweep-line inters)
+	  (if (point-sort-fun current-point inters)
 	      (nheap-insert inters event-queue)))))))
 
 (defun move-sweep-line (sweep-line x y)
@@ -234,14 +234,14 @@
 		 (let ((neighbours (insert-edge new-edge sweep-line)))
 		   (when neighbours
 		     (destructuring-bind (upper . lower) neighbours
-		       (add-if-intersection upper new-edge event-queue sweep-line)
-		       (add-if-intersection new-edge lower event-queue sweep-line)))
+		       (add-if-intersection upper new-edge event-queue event)
+		       (add-if-intersection new-edge lower event-queue event)))
 		   (recurse-bentley-ottmann event-queue sweep-line acc)))
 	       (destructuring-bind (upper . lower) (delete-edge (edge event) sweep-line)
 		 (unless (and (not (heap-empty event-queue))
 			      (point-equal-p (heap-peek event-queue) event))
 		   (move-sweep-line sweep-line (x event)(y event)))
-		 (add-if-intersection upper lower event-queue sweep-line)
+		 (add-if-intersection upper lower event-queue event)
 		 (recurse-bentley-ottmann event-queue sweep-line acc))))
 	   (event-intersection
 	    (push event acc)
