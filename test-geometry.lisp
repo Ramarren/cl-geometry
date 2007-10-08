@@ -2,7 +2,8 @@
 	    (:export #:test-triangulate
 		     #:test-decompose
 		     #:test-bentley-ottmann
-		     #:test-decompose-bo))
+		     #:test-decompose-bo
+		     #:test-decompose-triangle))
 
 (in-package :test-geometry)
 
@@ -92,4 +93,25 @@
 	  (line-to (x kk)(y kk)))
 	(line-to (x (car tk))(y (car tk)))
 	(fill-path)))
+    (save-png "test-geometry.png")))
+
+(defun test-decompose-triangle (polygon)
+  (with-canvas (:width 420 :height 420)
+    (translate 10 10)
+    (set-rgba-fill 0 0 0.8 1.0)
+    (set-rgba-stroke 0 0.8 0 0.5)
+    (move-to (x (car polygon))(y (car polygon)))
+    (dolist (tk polygon)
+      (line-to (x tk)(y tk)))
+    (line-to (x (car polygon))(y (car polygon)))
+    (even-odd-fill-and-stroke)
+    (translate 0 0)
+    (let ((d-polys (decompose-complex-polygon-triangles polygon :in-test 'geometry:point-in-polygon-crossing-p)))
+      (set-rgba-fill 0 1.0 0 0.2)
+      (dolist (tk d-polys)
+	(move-to (x (car tk))(y (car tk)))
+	(dolist (kk tk)
+	  (line-to (x kk)(y kk)))
+	(line-to (x (car tk))(y (car tk)))
+	(fill-and-stroke)))
     (save-png "test-geometry.png")))

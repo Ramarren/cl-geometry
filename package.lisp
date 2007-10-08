@@ -45,5 +45,6 @@
 	   #:frustrated-polygon-p
 	   #:shamos-hoey
 	   #:bentley-ottmann
-	   #:decompose-complex-polygon-bentley-ottmann))
+	   #:decompose-complex-polygon-bentley-ottmann
+	   #:decompose-complex-polygon-triangles))
 
