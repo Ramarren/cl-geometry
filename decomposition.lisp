@@ -17,12 +17,6 @@
 		 (recurse-ring (next-node node) head (cons node acc)))))
     (cons ring (recurse-ring (next-node ring) ring nil))))
 
-(defmethod x ((object poly-ring-node))
-  (x (val object)))
-
-(defmethod y ((object poly-ring-node))
-  (y (val object)))
-
 (defun ring-to-list-of-edges (ring)
   "Construct a list of edges attached to vertexes."
   (labels ((recurse-ring (node head acc)

@@ -17,13 +17,13 @@
 		     :start (start edge)
 		     :end (end edge))))
 
-(defun vertical-edge (edge)
+(defun vertical-edge-p (edge)
   "Returns t if edge is horizontal."
   (= (x (start edge))(x (end edge))))
 
 (defun trapezoidize-edges (edge-list)
   "Returns a list of trapezoids build from a set of edges and their bounding box."
-  (let ((clean-edge-list (mapcar #'orient-edge-right (remove-if #'vertical-edge edge-list))))
+  (let ((clean-edge-list (mapcar #'orient-edge-right (remove-if #'vertical-edge-p edge-list))))
     ;vertical edges only create problems when trapezoidating
     (let ((endpoints (create-initial-event-list clean-edge-list))
 	  (intersections (bentley-ottmann clean-edge-list)))

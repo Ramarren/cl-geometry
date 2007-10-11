@@ -4,48 +4,6 @@
 
 ;;;; Express polygon a simple list of points.
 
-;;;or a list od edges
-(defun edge-list-from-point-list (polygon &optional (edge-type 'line-segment))
-  "Change polygon represented as a list of points into a list of edges (line segments)."
-  (let ((vertex-zero (car polygon)))
-    (maplist #'(lambda (lst)
-		 (if (null (cadr lst))
-		     (make-instance edge-type :start (car lst) :end vertex-zero)
-		     (make-instance edge-type :start (car lst) :end (cadr lst))))
-	     polygon)))
-
-;;; or double-linked ring
-(defclass poly-ring-node ()
-  ((val :accessor val :initarg :val)
-   (next :accessor next-node :initarg :next)
-   (prev :accessor prev-node :initarg :prev))
-  (:documentation "Double linked ring node."))
-
-(defmethod print-object ((object poly-ring-node) stream)
-  (print-unreadable-object (object stream :type t)
-    (format stream "NODE: ~a" (val object))))
-
-(defun double-linked-ring-from-point-list (polygon &optional (ring-type 'poly-ring-node))
-  "Change polygon representation from list of points to double linked ring of points."
-  (let ((head (make-instance ring-type)))
-    (let ((tail head))
-      (dolist (tk polygon)
-	(setf (val tail) tk
-	      (next-node tail) (make-instance ring-type)
-	      (prev-node (next-node tail)) tail
-	      tail (next-node tail)))
-      (setf (prev-node head) (prev-node tail)
-	    (next-node (prev-node tail)) head))
-    head))
-
-(defun point-list-from-ring (ring-node)
-  (let ((point-list nil))
-    (iterate (for node initially ring-node then (next-node node))
-	     (until (and (eq node ring-node)
-			 (not (first-iteration-p))))
-	     (push (val node) point-list))
-    (nreverse point-list)))
-
 (defmethod construct-bounding-box ((object list));assumes all list are polygons...
   (iterate (for vertex in object)
 	   (minimizing (x vertex) into x-min)
