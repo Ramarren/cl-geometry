@@ -17,6 +17,7 @@
 	       (:file "heap")
 	       (:file "bentley-ottmann" :depends-on ("heap" "representations"))
 	       (:file "trapezoidation" :depends-on ("bentley-ottmann"))
-	       (:file "polygon" :depends-on ("basic-polygon" "triangulation" "decomposition" "trapezoidation")))
+	       (:file "polygon" :depends-on ("basic-polygon" "triangulation" "decomposition" "trapezoidation"))
+	       (:file "polygon-binary" :depends-on ("polygon")))
   :depends-on (:iterate :trees))
 
