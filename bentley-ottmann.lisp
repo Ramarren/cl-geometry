@@ -12,14 +12,6 @@
    (edge2 :accessor edge2 :initarg :edge2))
   (:documentation "Intersection event for Bentley-Ottmann algorithm."))
 
-(defun point-sort-fun (point1 point2)
-  "Order points by increasing x then y."
-  (if (= (x point1)(x point2))
-      (if (= (y point1)(y point2))
-	  (if (typep point1 'event-endpoint)
-	      (eql (direction point1) 'right))
-	  (< (y point1)(y point2)))
-      (< (x point1)(x point2))))
 
 ;;; Start with a simpler Shamos-Hoey algorithm which detects if there is at least on intersection
 ;;; among a number of edges.
@@ -189,11 +181,6 @@
 	(sweep-line (make-instance 'sweep-line)))
     (recurse-shamos-hoey event-queue sweep-line)))
 
-(defun simple-polygon-sh-p (polygon)
-  "Check if polygon is simple using Shamos-Hoey algorithm."
-  (not (shamos-hoey (edge-list-from-point-list polygon))))
-
-
 (defun add-if-intersection (edge1 edge2 event-queue current-point)
   "Add intersection to event queue if edge1 intersects edge2."
   (when (and edge1
@@ -265,46 +252,3 @@
 (defclass taint-segment (line-segment)
   ((taint :accessor taint :initform nil))
   (:documentation "Extend line-segment with taint boolean."))
-
-(defun decompose-complex-polygon-bentley-ottmann (polygon)
-  "Decompose polygon using bentley-ottmann, hopefully in something close to quadratic time."
-  (if (simple-polygon-sh-p polygon)
-      (list polygon)
-      (let ((ring-index (collect-ring-nodes
-			 (double-linked-ring-from-point-list polygon))))
-	(let ((ring-edges (edge-list-from-point-list ring-index 'taint-segment)))
-	  (let ((in-points (bentley-ottmann ring-edges))
-		(simple-polys nil))
-	    (dolist (tk in-points)
-	      (let ((edge1 (edge1 tk))
-		    (edge2 (edge2 tk)))
-		(unless (or (taint edge1)
-			    (taint edge2));vertex surgery will invalidate edges
-		  (let ((in1 (start edge1))
-			(out1 (end edge1))
-			(in2 (start edge2))
-			(out2 (end edge2)))
-		    (let ((v1 (make-instance 'poly-ring-node
-					     :val tk
-					     :prev in1
-					     :next out2))
-			  (v2 (make-instance 'poly-ring-node
-					     :val tk
-					     :prev in2
-					     :next out1)))
-		      (push v1 ring-index)
-		      (push v2 ring-index)
-		      (setf (taint edge1) t
-			    (taint edge2) t)
-		      (setf (next-node in1) v1)
-		      (setf (prev-node out1) v2)
-		      (setf (next-node in2) v2)
-		      (setf (prev-node out2) v1))))))
-	    (iterate (while ring-index)
-		     (push (collect-ring-nodes (car ring-index)) simple-polys)
-		     (setf ring-index (set-difference ring-index (car simple-polys))))
-	    (reduce #'append
-		    (mapcar #'decompose-complex-polygon-bentley-ottmann ;due to tainting the polygon might not have been completely decomposed
-			    (mapcar #'(lambda (poly)
-					(mapcar #'val poly))
-				    simple-polys))))))))

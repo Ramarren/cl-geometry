@@ -21,6 +21,7 @@
   (:documentation "Access y coordinate of a point-like object."))
 
 (defun make-point (x y &optional (point-type 'point))
+  "Create a new point like object."
   (make-instance point-type :x x :y y))
 
 (defun point-equal-p (point1 point2)

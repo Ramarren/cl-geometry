@@ -126,24 +126,3 @@
   (destructuring-bind (v1 v2 v3 v4) trapezoid
     (cons (list v1 v2 v3)
 	  (list v3 v4 v1))))
-
-(defun decompose-complex-polygon-triangles (polygon &key (in-test 'point-in-polygon-winding-p))
-  "Decomposes a complex polygon into triangles. Returns a list of triangles inside polygon according to :in-test, which is a function taking a point and a polygon."
-  (let ((trapez (trapezoidize-edges (edge-list-from-point-list polygon))))
-    (let ((triangles nil))
-      (dolist (tk trapez)
-	(let ((ctrap (collapse-trapezoid tk)))
-	  (cond
-	    ((= (length ctrap) 3)
-	     (push ctrap triangles))
-	    ((= (length ctrap) 4)
-	     (destructuring-bind (tr1 . tr2) (split-trapezoid ctrap)
-	       (push tr1 triangles)
-	       (push tr2 triangles))))))
-      (remove-if-not #'(lambda (x)
-			 (destructuring-bind (a b c) x
-			   (let ((central-point (make-instance 'point
-							       :x (/ (+ (x a)(x b)(x c)) 3)
-							       :y (/ (+ (y a)(y b)(y c)) 3))));possibly overkill, but central point definitely is inside triangle
-			     (funcall in-test central-point polygon))))
-		     triangles))))

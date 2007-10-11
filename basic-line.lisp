@@ -2,33 +2,6 @@
 
 ;;;; This files defines basic functions for lines and line segments (geometric vectors).
 
-(defclass point ()
-  ((x :accessor x :initarg :x :initform 0)
-   (y :accessor y :initarg :y :initform 0))
-  (:documentation "A point on a plane, with cartesian coordinates."))
-
-(defmethod print-object ((object point) stream)
-  (print-unreadable-object (object stream :type t)
-    (format stream "~a,~a" (x object) (y object))))
-
-(defun point-equal-p (point1 point2)
-  "Checks if two points are geometrically equal."
-  (and (= (x point1)(x point2))
-       (= (y point1)(y point2))))
-
-(defun coords-to-points (coord-list)
-  "Coordinate list (x1 y1 x2 y2 ... xn yn) to point list"
-  (assert (zerop (mod (length coord-list) 2)))
-  (labels ((recurse-list (coord-list acc)
-	     (if (null coord-list)
-		 (nreverse acc)
-		 (recurse-list (cddr coord-list)
-			       (cons (make-instance 'point
-						    :x (car coord-list)
-						    :y (cadr coord-list))
-				     acc)))))
-    (recurse-list coord-list nil)))
-
 (defclass line-segment ()
   ((start :accessor start :initarg :start :initform (make-instance 'point))
    (end :accessor end :initarg :end :initform (make-instance 'point)))
@@ -41,6 +14,10 @@
 	    (y (start object))
 	    (x (end object))
 	    (y (end object)))))
+
+(defun make-line-segment (start end &optional (line-segment-type 'line-segment))
+  "Create a new line segment."
+  (make-instance line-segment-type :start start :end end))
 
 (defclass line ()
   ((A :accessor A :initarg :A)
@@ -78,7 +55,7 @@
       (cond
 	((and (= x1 x2)(= y1 y2)) (error "Degenerate line segment."))
 	((= x1 x2) (make-instance 'line :B 0 :A 1 :C (- x1)));vertical
-	((= y1 y2) (make-instance 'line :A 0 :B 1 :C (- y1)))
+	((= y1 y2) (make-instance 'line :A 0 :B 1 :C (- y1)));horizontal
 	(t (make-instance 'line :A 1 :B (- (/ (- x2 x1)(- y2 y1))) :C (- (/ (- (* x1 y2) (* y1 x2))
 									    (- y2 y1)))))))))
 
