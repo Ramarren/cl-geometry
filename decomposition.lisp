@@ -9,27 +9,6 @@
 ;;; n^3 if  I create one  loop too many... actually,  I will be  glad if it's subexponential  at the
 ;;; moment.
 
-(defun collect-ring-nodes (ring)
-  "Construct a list of all nodes in a ring."
-  (labels ((recurse-ring (node head acc)
-	     (if (eq node head)
-		 (nreverse acc)
-		 (recurse-ring (next-node node) head (cons node acc)))))
-    (cons ring (recurse-ring (next-node ring) ring nil))))
-
-(defun ring-to-list-of-edges (ring)
-  "Construct a list of edges attached to vertexes."
-  (labels ((recurse-ring (node head acc)
-	     (if (eq node head)
-		 acc
-		 (recurse-ring (next-node node) head (cons (make-instance 'line-segment
-									  :start (prev-node node)
-									  :end node)
-							   acc)))))
-    (nreverse (cons (make-instance 'line-segment
-				  :start (prev-node ring)
-				  :end ring)
-		    (recurse-ring (next-node ring) ring nil)))))
 
 (defun find-intersection (edge-list)
   (labels ((recurse-edge-list (edge-list-1 edge-list-2)
