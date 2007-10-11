@@ -19,6 +19,7 @@
       nil))
 
 (defun sanitize-edges (edge-list acc)
+  "Drop zero length edges and merge all segment intersecting edges."
   (if (null edge-list)
       (nreverse acc)
       (let ((head (car edge-list))
@@ -33,6 +34,7 @@
 	      (sanitize-edges racc (cons head acc)))))))
 
 (defun polygon-binary (polygon1 polygon2 triangle-test)
+  "Return all triangles fulfilling triangle-test from triangulation of all edges of two polygons."
   (let ((edge-list (sanitize-edges (append (edge-list-from-point-list polygon1)
 					   (edge-list-from-point-list polygon2))
 				   nil)))
@@ -41,6 +43,7 @@
 	  (remove-if-not triangle-test triangles)))))
 
 (defun polygon-union (polygon1 polygon2 &key (in-test 'point-in-polygon-winding-p) (in-test-1 nil) (in-test-2 nil))
+  "Return triangles of an union of two polygons."
   (let ((in-1 (if in-test-1 in-test-1 in-test))
 	(in-2 (if in-test-2 in-test-2 in-test)))
     (polygon-binary polygon1 polygon2 #'(lambda (x)
@@ -48,6 +51,7 @@
 					      (funcall in-2 (triangle-center-point x) polygon2))))))
 
 (defun polygon-intersection (polygon1 polygon2 &key (in-test 'point-in-polygon-winding-p) (in-test-1 nil) (in-test-2 nil))
+  "Return triangles of an intersection of two polygons."
   (let ((in-1 (if in-test-1 in-test-1 in-test))
 	(in-2 (if in-test-2 in-test-2 in-test)))
     (polygon-binary polygon1 polygon2 #'(lambda (x)
@@ -55,6 +59,7 @@
 					       (funcall in-2 (triangle-center-point x) polygon2))))))
 
 (defun polygon-difference (polygon1 polygon2 &key (in-test 'point-in-polygon-winding-p) (in-test-1 nil) (in-test-2 nil))
+  "Return triangles of polygon1 minus polygon2."
   (let ((in-1 (if in-test-1 in-test-1 in-test))
 	(in-2 (if in-test-2 in-test-2 in-test)))
     (polygon-binary polygon1 polygon2 #'(lambda (x)

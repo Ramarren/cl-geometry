@@ -46,5 +46,8 @@
 	   #:shamos-hoey
 	   #:bentley-ottmann
 	   #:decompose-complex-polygon-bentley-ottmann
-	   #:decompose-complex-polygon-triangles))
+	   #:decompose-complex-polygon-triangles
+	   #:polygon-union
+	   #:polygon-intersection
+	   #:polygon-difference))
 
