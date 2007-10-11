@@ -21,6 +21,12 @@
   (print-unreadable-object (object stream :type t)
     (format stream "NODE: ~a" (val object))))
 
+(defmethod x ((object poly-ring-node))
+  (x (val object)))
+
+(defmethod y ((object poly-ring-node))
+  (y (val object)))
+
 (defun double-linked-ring-from-point-list (polygon &optional (ring-type 'poly-ring-node))
   "Change polygon representation from list of points to double linked ring of points."
   (let ((head (make-instance ring-type)))

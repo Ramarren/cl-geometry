@@ -12,14 +12,6 @@
   (print-unreadable-object (object stream :type t)
     (format stream "~a,~a" (x object) (y object))))
 
-(defmethod x ((object poly-ring-node))
-  (x (val object))
-  (:documentation "Access x coordinate of a point-like object."))
-
-(defmethod y ((object poly-ring-node))
-  (y (val object))
-  (:documentation "Access y coordinate of a point-like object."))
-
 (defun make-point (x y &optional (point-type 'point))
   "Create a new point like object."
   (make-instance point-type :x x :y y))
