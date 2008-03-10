@@ -13,7 +13,7 @@
   (:documentation "Intersection event for Bentley-Ottmann algorithm."))
 
 
-;;; Start with a simpler Shamos-Hoey algorithm which detects if there is at least on intersection
+;;; Start with a simpler Shamos-Hoey algorithm which detects if there is at least one intersection
 ;;; among a number of edges.
 
 (defun create-initial-event-list (edge-list)
