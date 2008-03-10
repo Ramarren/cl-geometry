@@ -1,1 +1,6 @@
 doc
+
+#emacs temporary files
+*~
+
+*.fasl
