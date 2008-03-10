@@ -1,8 +1,4 @@
-(defpackage :2d-geometry-system (:use :cl :asdf))
-
-(in-package :2d-geometry-system)
-
-(defsystem :geometry
+(asdf:defsystem :cl-geometry
   :description "Twodimensional geometry."
   :version "0.0.2"
   :components ((:file "package" :depends-on ("heap"))
