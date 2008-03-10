@@ -1,6 +1,7 @@
 (asdf:defsystem :cl-geometry
-  :description "Twodimensional geometry."
-  :version "0.0.2"
+  :description "Two dimensional geometry."
+  :version "0.0.3"
+  :licence "BSD"
   :components ((:file "package" :depends-on ("heap"))
 	       (:file "trivial-geometry" :depends-on ("package"))
 	       (:file "basic-point" :depends-on ("package"))
