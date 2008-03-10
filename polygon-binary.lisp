@@ -65,3 +65,19 @@
     (polygon-binary polygon1 polygon2 #'(lambda (x)
 					  (and (funcall in-1 (triangle-center-point x) polygon1)
 					       (not (funcall in-2 (triangle-center-point x) polygon2)))))))
+
+(defun polygon-difference-nary (polygon &rest holes &key (in-test 'point-in-polygon-winding-p))
+  "Return triangles of polygon with some holes."
+  (let ((edge-list (sanitize-edges (append (edge-list-from-point-list polygon)
+					   (reduce #'append
+						   (mapcar #'edge-list-from-point-list
+							   holes))) nil)))
+    (let ((trapez (trapezoidize-edges edge-list)))
+      (let ((triangles (trapezoids-to-triangles trapez)))
+	(remove-if-not #'(lambda (x)
+			   (let ((center-point (triangle-center-point x)))
+			     (and (funcall in-test center-point polygon)
+				  (every #'(lambda (hole)
+					     (not (funcall in-test center-point hole)))
+					 holes))))
+		       triangles)))))
