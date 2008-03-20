@@ -83,7 +83,7 @@
 				  (x sweep-line) min-y))
 			   trapezoids)
 		     ;truncate edges
-		     (trees::dotree (tk (edge-tree sweep-line))
+		     (trees:dotree (tk (edge-tree sweep-line))
 		       (unless (= (x event)
 				  (x (end tk)))
 			 (let ((inters-y (y (lines-intersection-point

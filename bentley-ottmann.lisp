@@ -88,14 +88,12 @@
   (declare (ignore initargs))
   (setf (edge-tree instance)
 	(trees:make-binary-tree :red-black
-				:eqfun #'eql
-				:keyfun #'identity
-				:compfun #'(lambda (lv rv)
+				#'(lambda (lv rv)
 					     (order-line-segments-at-point lv rv instance)))))
 
 (defun insert-edge (edge sweep-line)
   "Insert new edge into sweep-line, returns a cons of neighbouring edges."
-  (trees:insert (edge-tree sweep-line) edge)
+  (trees:insert edge (edge-tree sweep-line))
   ;(assert (check-tree-integrity sweep-line))
   (let ((ne-pos (trees:position edge (edge-tree sweep-line)))
 	(t-size (trees:size (edge-tree sweep-line))))
