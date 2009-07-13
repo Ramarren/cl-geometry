@@ -83,6 +83,14 @@
   ((edge-tree :accessor edge-tree))
   (:documentation "Sweep line."))
 
+(defgeneric (setf x) (new-value object)
+  (:method (new-value (object sweep-line))
+    (setf (slot-value object 'x) new-value)))
+
+(defgeneric (setf y) (new-value object)
+  (:method (new-value (object sweep-line))
+    (setf (slot-value object 'y) new-value)))
+
 (defmethod initialize-instance :after ((instance sweep-line) &rest initargs)
   "Create a tree, use closure over the sweep line as ordering function."
   (declare (ignore initargs))

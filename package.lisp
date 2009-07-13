@@ -23,6 +23,9 @@
             #:end
            #:line
             #:A #:B #:C
+           #:polygon
+            #:point-list
+            #:edge-list
            #:line-y-at-x #:line-x-at-y
            #:line-from-segment
            #:line-segment-length
@@ -49,4 +52,9 @@
            #:decompose-complex-polygon-triangles
            #:polygon-union
            #:polygon-intersection
-           #:polygon-difference))
+           #:polygon-difference
+           #:make-polygon-from-point-list
+           #:make-polygon-from-point-ring
+           #:coords-to-points
+           #:make-polygon-from-coords))
+

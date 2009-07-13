@@ -67,20 +67,20 @@
                                               (line-from-segment prev-edge)
                                               (make-instance 'line :a 1 :b 0 :c (- (x event)))))))
                            (push (coords-to-points
-                                  (list (x sweep-line)(y (start prev-edge))
-                                        (x event) inters2-y
-                                        (x event) inters1-y
-                                        (x sweep-line)(y (start tk))))
+                                  (x sweep-line)(y (start prev-edge))
+                                  (x event) inters2-y
+                                  (x event) inters1-y
+                                  (x sweep-line)(y (start tk)))
                                  trapezoids))
                          (setf prev-edge tk)))
                      ;terminate with upper bounding edge
                      (push (coords-to-points
-                            (list (x sweep-line)(y (start prev-edge))
-                                  (x event)(y (lines-intersection-point
-                                               (line-from-segment prev-edge)
-                                               (make-instance 'line :a 1 :b 0 :c (- (x event)))))
-                                  (x event) min-y
-                                  (x sweep-line) min-y))
+                            (x sweep-line)(y (start prev-edge))
+                            (x event)(y (lines-intersection-point
+                                         (line-from-segment prev-edge)
+                                         (make-instance 'line :a 1 :b 0 :c (- (x event)))))
+                            (x event) min-y
+                            (x sweep-line) min-y)
                            trapezoids)
                      ;truncate edges
                      (trees:dotree (tk (edge-tree sweep-line))

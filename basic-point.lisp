@@ -4,8 +4,8 @@
 ;;;; object) (y object).
 
 (defclass point ()
-  ((x :accessor x :initarg :x :initform 0)
-   (y :accessor y :initarg :y :initform 0))
+  ((x :reader x :initarg :x :initform 0)
+   (y :reader y :initarg :y :initform 0))
   (:documentation "A point on a plane, with cartesian coordinates."))
 
 (defmethod print-object ((object point) stream)
@@ -21,16 +21,11 @@
   (and (= (x point1)(x point2))
        (= (y point1)(y point2))))
 
-(defun coords-to-points (coord-list)
+(defun coords-to-points (&rest coord-list)
   "Coordinate list (x1 y1 x2 y2 ... xn yn) to point list"
   (assert (zerop (mod (length coord-list) 2)))
-  (labels ((recurse-list (coord-list acc)
-             (if (null coord-list)
-                 (nreverse acc)
-                 (recurse-list (cddr coord-list)
-                               (cons (make-point (car coord-list) (cadr coord-list))
-                                     acc)))))
-    (recurse-list coord-list nil)))
+  (iterate (for (x y . nil) on coord-list by #'cddr)
+           (collect (make-point x y))))
 
 (defun left-p (a b c)
   "Is c to the left of the oriented line defined by a->b?"

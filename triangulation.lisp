@@ -26,7 +26,7 @@
                   (left-on-p b a a-))))))
 
 (defun diagonal-p (ring-node-a ring-node-b)
-  "Is a line segment between two nodes a diagonal of polygon with edges edge-list?"
+  "Is a line segment between two nodes a diagonal of polygon the nodes belong to?"
   (and (in-cone-p ring-node-a (val ring-node-b))
        (in-cone-p ring-node-b (val ring-node-a))
        (possible-diagonal-p (make-instance 'line-segment
@@ -65,17 +65,24 @@
 
 (defun triangulate (polygon)
   "Triangulate polygon. Returns list of triangles."
-  (let ((point-list (point-list polygon)))
+  (unless (simple-polygon-p polygon)
+    (error "Polygon must be simple for ear-removal."))
+  (let ((point-list (if (plusp (polygon-orientation polygon))
+                        (point-list polygon)
+                        (reverse (point-list polygon)))))
    (let ((num-vertices (length point-list))
          (ear-list))
      (let ((ring-head (ear-init point-list)))
        (iterate (while (> num-vertices 3))
                 (with node = ring-head)
+                (with counter = 0)
                 (if (ear node)
                     (multiple-value-bind (new-node ear) (remove-ear node)
                       (setf node new-node)
                       (decf num-vertices)
                       (push ear ear-list))
                     (setf node (next-node node)))
+                (assert (<= counter num-vertices))
+                (incf counter)
                 (finally (push (point-list-from-ring node) ear-list))))
      (mapcar #'make-polygon-from-point-list ear-list))))
