@@ -5,9 +5,9 @@
 (defun distance (x1 y1 x2 y2)
   "Distance between two points on a plane."
   (let ((x-dist (- x2 x1))
-	(y-dist (- y2 y1)))
+        (y-dist (- y2 y1)))
     (sqrt (+ (* x-dist x-dist)
-	     (* y-dist y-dist)))))
+             (* y-dist y-dist)))))
 
 ;;circle
 (defun circumference-circle (r)
@@ -26,8 +26,8 @@
 (defun circumference-ellipse-axes (a b)
   "Circumference of an ellipse given semimajor and semiminro axes using Ramanujan's approximation."
   (* pi (- (* 3 (+ a b))
-	   (sqrt (* (+ (* 3 a) b)
-		    (+ a (* 3 b)))))))
+           (sqrt (* (+ (* 3 a) b)
+                    (+ a (* 3 b)))))))
 
 ;;triangle
 (defun perimeter-triangle (a b c)

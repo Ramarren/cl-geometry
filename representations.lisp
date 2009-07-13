@@ -6,10 +6,10 @@
   "Change polygon represented as a list of points into a list of edges (line segments)."
   (let ((vertex-zero (car polygon)))
     (maplist #'(lambda (lst)
-		 (if (null (cadr lst))
-		     (make-instance edge-type :start (car lst) :end vertex-zero)
-		     (make-instance edge-type :start (car lst) :end (cadr lst))))
-	     polygon)))
+                 (if (null (cadr lst))
+                     (make-instance edge-type :start (car lst) :end vertex-zero)
+                     (make-instance edge-type :start (car lst) :end (cadr lst))))
+             polygon)))
 
 (defclass poly-ring-node ()
   ((val :accessor val :initarg :val)
@@ -32,20 +32,20 @@
   (let ((head (make-instance ring-type)))
     (let ((tail head))
       (dolist (tk polygon)
-	(setf (val tail) tk
-	      (next-node tail) (make-instance ring-type)
-	      (prev-node (next-node tail)) tail
-	      tail (next-node tail)))
+        (setf (val tail) tk
+              (next-node tail) (make-instance ring-type)
+              (prev-node (next-node tail)) tail
+              tail (next-node tail)))
       (setf (prev-node head) (prev-node tail)
-	    (next-node (prev-node tail)) head))
+            (next-node (prev-node tail)) head))
     head))
 
 (defun collect-ring-nodes (ring)
   "Construct a list of all nodes in a ring."
   (labels ((recurse-ring (node head acc)
-	     (if (eq node head)
-		 (nreverse acc)
-		 (recurse-ring (next-node node) head (cons node acc)))))
+             (if (eq node head)
+                 (nreverse acc)
+                 (recurse-ring (next-node node) head (cons node acc)))))
     (cons ring (recurse-ring (next-node ring) ring nil))))
 
 (defun point-list-from-ring (ring-node)
@@ -56,13 +56,13 @@
 (defun ring-to-list-of-edges (ring)
   "Construct a list of edges attached to vertexes."
   (labels ((recurse-ring (node head acc)
-	     (if (eq node head)
-		 acc
-		 (recurse-ring (next-node node) head (cons (make-instance 'line-segment
-									  :start (prev-node node)
-									  :end node)
-							   acc)))))
+             (if (eq node head)
+                 acc
+                 (recurse-ring (next-node node) head (cons (make-instance 'line-segment
+                                                                          :start (prev-node node)
+                                                                          :end node)
+                                                           acc)))))
     (nreverse (cons (make-instance 'line-segment
-				   :start (prev-node ring)
-				   :end ring)
-		    (recurse-ring (next-node ring) ring nil)))))
+                                   :start (prev-node ring)
+                                   :end ring)
+                    (recurse-ring (next-node ring) ring nil)))))
