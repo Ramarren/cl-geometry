@@ -8,6 +8,13 @@ The system assumes exact rational arithmetic, so no floating point coordinates a
 
 The system was not heavily tested or used. Comments and/or patches welcome.
 
+## Classes
+
+- point
+- line-segment (ie. an ordered set of two points)
+- line (an infinite geometric object given by equation Ax+By+C=0)
+- polygon (an ordered set of n points)
+
 ## Decomposition
 
 Most functions are explained by their docstrings. The most complex and somewhat chaotic are decomposition/triangulation functions.

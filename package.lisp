@@ -58,4 +58,3 @@
            #:coords-to-points
            #:make-polygon-from-coords
            #:polygon-difference-nary))
-
