@@ -89,7 +89,8 @@
   (setf (edge-tree instance)
 	(trees:make-binary-tree :red-black
 				#'(lambda (lv rv)
-					     (order-line-segments-at-point lv rv instance)))))
+                                    (order-line-segments-at-point lv rv instance))
+                                :key #'identity)))
 
 (defun insert-edge (edge sweep-line)
   "Insert new edge into sweep-line, returns a cons of neighbouring edges."
