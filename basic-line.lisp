@@ -19,6 +19,9 @@
   "Create a new line segment."
   (make-instance line-segment-type :start start :end end))
 
+(defun copy-line-segment (line-segment)
+  (make-instance (type-of line-segment) :start (start line-segment) :end (end line-segment)))
+
 (defclass line ()
   ((A :accessor A :initarg :A)
    (B :accessor B :initarg :B)

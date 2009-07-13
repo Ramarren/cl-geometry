@@ -18,8 +18,7 @@
         t)
       nil))
 
-(defun sanitize-edges (edge-list acc)
-  "Drop zero length edges and merge all segment intersecting edges."
+(defun recurse-sanitize-edges (edge-list acc)
   (if (null edge-list)
       (nreverse acc)
       (let ((head (car edge-list))
@@ -33,11 +32,14 @@
                   (push tk racc)))
               (sanitize-edges racc (cons head acc)))))))
 
+(defun sanitize-edges (edge-list)
+  "Drop zero length edges and merge all segment intersecting edges."
+  (recurse-sanitize-edges (mapcar #'copy-line-segment edge-list) nil))
+
 (defun polygon-binary (polygon1 polygon2 triangle-test)
   "Return all triangles fulfilling triangle-test from triangulation of all edges of two polygons."
   (let ((edge-list (sanitize-edges (append (edge-list polygon1)
-                                           (edge-list polygon2))
-                                   nil)))
+                                           (edge-list polygon2)))))
     (let ((trapez (trapezoidize-edges edge-list)))
         (let ((triangles (trapezoids-to-triangles trapez)))
           (remove-if-not triangle-test triangles)))))
@@ -76,7 +78,7 @@
                                                                 (typecase poly
                                                                   (polygon t)
                                                                   (t nil)))
-                                                            holes)))) nil)))
+                                                            holes)))))))
     (let ((trapez (trapezoidize-edges edge-list)))
       (let ((triangles (trapezoids-to-triangles trapez)))
         (remove-if-not #'(lambda (x)
