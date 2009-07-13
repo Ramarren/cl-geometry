@@ -68,10 +68,15 @@
 
 (defun polygon-difference-nary (polygon &rest holes &key (in-test 'point-in-polygon-winding-p))
   "Return triangles of polygon with some holes."
-  (let ((edge-list (sanitize-edges (append (edge-list-from-point-list polygon)
+  (let ((edge-list (sanitize-edges (append (edge-list polygon)
                                            (reduce #'append
-                                                   (mapcar #'edge-list-from-point-list
-                                                           holes))) nil)))
+                                                   (mapcar #'edge-list
+                                                           (remove-if-not
+                                                            #'(lambda (poly)
+                                                                (typecase poly
+                                                                  (polygon t)
+                                                                  (t nil)))
+                                                            holes)))) nil)))
     (let ((trapez (trapezoidize-edges edge-list)))
       (let ((triangles (trapezoids-to-triangles trapez)))
         (remove-if-not #'(lambda (x)

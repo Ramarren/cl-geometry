@@ -56,5 +56,6 @@
            #:make-polygon-from-point-list
            #:make-polygon-from-point-ring
            #:coords-to-points
-           #:make-polygon-from-coords))
+           #:make-polygon-from-coords
+           #:polygon-difference-nary))
 
