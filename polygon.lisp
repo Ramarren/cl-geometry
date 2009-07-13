@@ -7,7 +7,7 @@
   (if (simple-polygon-sh-p polygon)
       (list polygon)
       (let ((ring-index (collect-ring-nodes
-                         (double-linked-ring-from-point-list polygon))))
+                         (point-ring polygon))))
         (let ((ring-edges (edge-list-from-point-list ring-index 'taint-segment)))
           (let ((in-points (bentley-ottmann ring-edges))
                 (simple-polys nil))
@@ -47,7 +47,7 @@
 
 (defun simple-polygon-sh-p (polygon)
   "Check if polygon is simple using Shamos-Hoey algorithm."
-  (not (shamos-hoey (edge-list-from-point-list polygon))))
+  (not (shamos-hoey (edge-list polygon))))
 
 (defun trapezoids-to-triangles (trapez)
   "Convert list of trapezoids to list of triangles."
@@ -61,11 +61,11 @@
            (destructuring-bind (tr1 . tr2) (split-trapezoid ctrap)
              (push tr1 triangles)
              (push tr2 triangles))))))
-    triangles))
+    (mapcar #'make-polygon-from-point-list triangles)))
 
 (defun triangle-center-point (triangle)
   "Return a central point of triangle."
-  (destructuring-bind (a b c) triangle
+  (destructuring-bind (a b c) (point-list triangle)
     (make-instance 'point
                    :x (/ (+ (x a)(x b)(x c)) 3)
                    :y (/ (+ (y a)(y b)(y c)) 3))))

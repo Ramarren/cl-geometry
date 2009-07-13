@@ -35,8 +35,8 @@
 
 (defun polygon-binary (polygon1 polygon2 triangle-test)
   "Return all triangles fulfilling triangle-test from triangulation of all edges of two polygons."
-  (let ((edge-list (sanitize-edges (append (edge-list-from-point-list polygon1)
-                                           (edge-list-from-point-list polygon2))
+  (let ((edge-list (sanitize-edges (append (edge-list polygon1)
+                                           (edge-list polygon2))
                                    nil)))
     (let ((trapez (trapezoidize-edges edge-list)))
         (let ((triangles (trapezoids-to-triangles trapez)))

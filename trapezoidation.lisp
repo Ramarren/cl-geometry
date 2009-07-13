@@ -4,7 +4,7 @@
 ;;;; decomposing them  into simple,  disjoint polygons  (trapezoids, which can  be joined  back into
 ;;;; larger polygons if desired, albeit slowly).
 
-;;;; This is somewhat different that trapezoidation for efficient triangulation, but it may be possible to
+;;;; This is somewhat different than trapezoidation for efficient triangulation, but it may be possible to
 ;;;; modify this code to do that. That is, it will work, but it may or may be not faster than ear removal.
 
 (defun orient-edge-right (edge)

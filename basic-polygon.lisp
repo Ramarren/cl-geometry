@@ -4,8 +4,8 @@
 
 ;;;; Express polygon a simple list of points.
 
-(defmethod construct-bounding-box ((object list));assumes all list are polygons...
-  (iterate (for vertex in object)
+(defmethod construct-bounding-box ((object polygon))
+  (iterate (for vertex in (point-list object))
            (minimizing (x vertex) into x-min)
            (minimizing (y vertex) into y-min)
            (maximizing (x vertex) into x-max)
@@ -16,27 +16,27 @@
                                            :y-min y-min
                                            :y-max y-max)))))
 
-(defun notany-symmetric-test (testfun lst)
-  "Return t if test is nil for every combination of elements of lst, assuming test is symmetric."
-  (labels ((recurse-list (lst1 lst2)
-             (if (null lst1)
+(defun notany-symmetric-test (testfun list)
+  "Return t if test is nil for every combination of elements of list, assuming test is symmetric."
+  (labels ((recurse-list (list1 list2)
+             (if (null list1)
                  t
-                 (if (null lst2)
-                     (recurse-list (cdr lst1)(cddr lst1))
-                     (if (not (null (funcall testfun (car lst1) (car lst2))))
+                 (if (null list2)
+                     (recurse-list (cdr list1)(cddr list1))
+                     (if (not (null (funcall testfun (car list1) (car list2))))
                          nil
-                         (recurse-list lst1 (cdr lst2)))))))
-    (recurse-list lst (cdr lst))))
+                         (recurse-list list1 (cdr list2)))))))
+    (recurse-list list (cdr list))))
 
 (defun frustrated-polygon-p (polygon)
   "Check if there are any zero length edges or that any two colinear edges intersect."
-  (let ((edge-list (edge-list-from-point-list polygon)))
+  (let ((edge-list (edge-list polygon)))
     (or (some #'(lambda (e) (zerop (line-segment-length e))) edge-list)
         (not (notany-symmetric-test #'line-segments-intersection-segment edge-list)))))
 
 (defun simple-polygon-p (polygon)
   "Check if polygon is simple, ie. if no two edges intersect, assuming only point intersections are possible. This uses brute force, comparing each edge to every other edge."
-  (let ((edge-list (edge-list-from-point-list polygon)))
+  (let ((edge-list (edge-list polygon)))
     (notany-symmetric-test #'(lambda (x y)
                                (line-segments-intersection-point x y :exclude-endpoints t))
                            edge-list)))
@@ -44,7 +44,7 @@
 
 (defun polygon-orientation (polygon)
   "Return 1 if polygon is counterclockwise and -1 if it is oriented clockwise. Assumes simple polygon."
-  (let ((poly-ring (double-linked-ring-from-point-list polygon)))
+  (let ((poly-ring (point-ring polygon)))
     ;find rightmost lowest vertex
     (let ((lowest-rightmost-node (do ((node poly-ring (next-node node))
                                       (min-node nil)
@@ -70,13 +70,13 @@
   "Calculate an area of a simple polygon."
   (* 1/2
      (polygon-orientation polygon)
-     (reduce #'+ (maplist #'(lambda (lst)
-                              (let ((v1 (car lst))
-                                    (v2 (if (cdr lst)
-                                            (cadr lst)
+     (reduce #'+ (maplist #'(lambda (list)
+                              (let ((v1 (car list))
+                                    (v2 (if (cdr list)
+                                            (cadr list)
                                             (car polygon))))
                                 (- (* (x v1)(y v2))(* (x v2)(y v1)))))
-                          polygon))))
+                          (point-list polygon)))))
 
 (defun filter-ray-intersection (point edge)
   "Return t if edge does not intersect ray from point properly."
@@ -92,14 +92,14 @@
 
 (defun point-in-polygon-crossing-p (point polygon)
   "Determine if a point belongs to a polygon using crossing (oddeven) rule."
-  (let ((edge-list (edge-list-from-point-list polygon)))
+  (let ((edge-list (edge-list polygon)))
     (oddp (count-if-not #'(lambda (edge)
                             (filter-ray-intersection point edge))
                         edge-list))))
 
 (defun point-in-polygon-winding-number (point polygon)
   "Calculate winding number of a point."
-  (let ((edge-list (edge-list-from-point-list polygon)))
+  (let ((edge-list (edge-list polygon)))
     (let ((intersecting-edges (remove-if #'(lambda (edge)
                                              (filter-ray-intersection point edge))
                                          edge-list)))

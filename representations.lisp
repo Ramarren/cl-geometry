@@ -2,14 +2,14 @@
 
 ;;;; This file defines functions manipulating representation of geometric data.
 
-(defun edge-list-from-point-list (polygon &optional (edge-type 'line-segment))
+(defun edge-list-from-point-list (point-list &optional (edge-type 'line-segment))
   "Change polygon represented as a list of points into a list of edges (line segments)."
-  (let ((vertex-zero (car polygon)))
+  (let ((vertex-zero (car point-list)))
     (maplist #'(lambda (lst)
                  (if (null (cadr lst))
                      (make-instance edge-type :start (car lst) :end vertex-zero)
                      (make-instance edge-type :start (car lst) :end (cadr lst))))
-             polygon)))
+             point-list)))
 
 (defclass poly-ring-node ()
   ((val :accessor val :initarg :val)
@@ -27,11 +27,11 @@
 (defmethod y ((object poly-ring-node))
   (y (val object)))
 
-(defun double-linked-ring-from-point-list (polygon &optional (ring-type 'poly-ring-node))
+(defun double-linked-ring-from-point-list (point-list &optional (ring-type 'poly-ring-node))
   "Change polygon representation from list of points to double linked ring of points."
   (let ((head (make-instance ring-type)))
     (let ((tail head))
-      (dolist (tk polygon)
+      (dolist (tk point-list)
         (setf (val tail) tk
               (next-node tail) (make-instance ring-type)
               (prev-node (next-node tail)) tail

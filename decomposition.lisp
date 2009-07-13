@@ -26,7 +26,7 @@
 
 (defun decompose-complex-polygon-nondisjoint (polygon)
   "Decomposes a complex polygon into a set of simple ones, possibly some entirely contained in others."
-  (let ((ring-head (double-linked-ring-from-point-list polygon))
+  (let ((ring-head (point-ring polygon))
         (simple-polys nil))
     (let ((ring-index (collect-ring-nodes ring-head))
           (edge-list (ring-to-list-of-edges ring-head)))
@@ -70,4 +70,4 @@
                                                 (collect-ring-nodes ring-head)
                                                 :test #'point-equal-p))
                (setf ring-head (car ring-index))))
-    simple-polys))
+    (mapcar #'make-polygon-from-point-list simple-polys)))
