@@ -50,7 +50,7 @@
         (or (and (>= (y c)(y a))
                  (<= (y c)(y b)))
             (and (>= (y c)(y b))
-                 (>= (y c)(y a)))))))
+                 (<= (y c)(y a)))))))
 
 (defun xor (p q)
   "Exlusive or logical operation."
