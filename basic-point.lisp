@@ -42,7 +42,7 @@
 (defun between-p (a b c)
   "Is c colinear with a->b and lies between them?"
   (when (colinear-p a b c)
-    (if (= (x a)(x b))
+    (if (= (y a)(y b))
         (or (and (>= (x c)(x a))
                  (<= (x c)(x b)))
             (and (>= (x c)(x b))
